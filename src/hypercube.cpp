@@ -14,7 +14,7 @@ using namespace std;
 
 static const int vertexNumber = 16;
 static const int edgeNumber = 32;
-static const int edgeResolution = 32;
+static const int edgeResolution = 128;
 
 struct HyperApp : OmniApp {
 
@@ -79,7 +79,6 @@ struct HyperApp : OmniApp {
 
   void generateMesh(Mesh& targetMesh, std::vector<Vec3f>& srcVt, HSV meshColor) {
     targetMesh.reset();
-
     targetMesh.primitive(Graphics::LINE_STRIP);
     for (int i = 0; i < srcVt.size(); ++i) {
       targetMesh.vertex(srcVt[i]);
