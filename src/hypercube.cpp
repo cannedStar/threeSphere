@@ -87,8 +87,6 @@ struct HyperApp : OmniApp {
     }
   }
 
-
-
   // CONSTRUCTOR
   HyperApp() {
 
@@ -176,7 +174,6 @@ struct HyperApp : OmniApp {
       g.pointSize(6);
       g.lineWidth(8);
       
-
       for(int i = 0; i < edgeNumber; ++i) {
         projectR4toR3(s3Edge[i], r4Edge[i]);
         generateMesh(edgeMesh[i], s3Edge[i], HSV((float)i / (float)edgeNumber, 1.f, 1.f));
@@ -223,7 +220,6 @@ struct HyperApp : OmniApp {
     }
 
     return true;
-
   } // onKeyDown
   
   std::string fragmentCode() {
