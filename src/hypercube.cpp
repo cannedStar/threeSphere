@@ -1,8 +1,7 @@
-//Steve Trettel's Hypercube Projection
+// Steve Trettel's Hypercube Projection
 //
 // Dennis Adderton
-// Summer 2017 revision 01
-// stereoprojection01
+// Kenny Kim
 /*
 */
 
