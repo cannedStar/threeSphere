@@ -129,7 +129,8 @@ struct HyperApp : OmniApp {
       for (int j = i + 1; j < vertNum; ++j) {
         Vec4f dist = (r4Vert[i] - r4Vert[j]) * 0.5f;
         if (dist.mag() == 1.f) {
-          generateEdge(s3Edge[k++], r4Vert[i], r4Vert[j]);
+          generateEdge(s3Edge[k], r4Vert[i], r4Vert[j]);
+          k++;
         }
       }
     }
@@ -139,8 +140,8 @@ struct HyperApp : OmniApp {
       cout << "Error: Predefined Edge Number didn't match generated Edge Number!" << endl;
     }
 
-    leftMesh.reserve(edgeNum);
-    rightMesh.reserve(edgeNum);
+    leftMesh.resize(edgeNum);
+    rightMesh.resize(edgeNum);
 
     for(int i = 0; i < edgeNum; ++i) {
       projectS3toR3(leftR3Edge[i], s3Edge[i], false);
