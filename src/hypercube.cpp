@@ -12,60 +12,45 @@
 using namespace al;
 using namespace std;
 
-static const int vertexNumber = 16;
-static const int edgeNumber = 32;
-static const int edgeResolution = 128;
+static const int vertNum = 16;
+static const int edgeNum = 32;
+static const int edgeRes = 8;
 
 struct HyperApp : OmniApp {
 
   Material material;
   Light light;
 
-  std::vector<Vec4f> hypercube_vertices;
-  std::vector<Vec4f> r4Edge[edgeNumber];
-  std::vector<Vec3f> s3Edge[edgeNumber];
-  std::vector<Mesh> edgeMesh;
+  std::vector<Vec4f> r4Vert;
+  std::vector<Vec4f> s3Edge[edgeNum];
+  std::vector<Vec3f> leftR3Edge[edgeNum], rightR3Edge[edgeNum];
+  std::vector<Mesh> leftMesh, rightMesh;
 
   float theta;
   float epsilon;
   Mat4f camera;
   Mat4f eye;
 
-  void generateEdge(std::vector<Vec4f>& tgtEdge, Vec4f& srcVt1, Vec4f& srcVt2) {
-    
-    // tgtEdge.resize(edgeResolution);
+  void generateEdge(std::vector<Vec4f>& tgtEdge, const Vec4f& srcVt1, const Vec4f& srcVt2) {
 
-    for (int i = 0; i < edgeResolution; ++i) {
-      float t = (float)i / ((float)edgeResolution - 1.f);
+    for (int i = 0; i < edgeRes; ++i) {
+      float t = (float)i / ((float)edgeRes - 1.f);
       Vec4f newPoint = srcVt1 + t * (srcVt2 - srcVt1);
 
-      // cout << newPoint << endl;
-
-      // cout << newPoint.normalized() << endl;
-
-      // projection onto S3 - change this later to other projections
-      // cout << "src " << newPoint << " -> " << newPoint.normalize() << endl;
-      // // projection onto S3 - change this later to other projections
-      // newPoint = newPoint.normalize();
-     
-      // why?????????? 
       tgtEdge[i] = newPoint.normalized();
     }
-
-    // cout << tgtEdge.size() << endl;
-
-    // for (int i = 0; i < edgeResolution; ++i)
-    //   cout << tgtEdge[i] << endl;
   }
 
-  void projectR4toR3(std::vector<Vec3f>& tgtVt, std::vector<Vec4f>& srcVt) {
+  void projectS3toR3(std::vector<Vec3f>& tgtVt, const std::vector<Vec4f>& srcVt, const bool isRight = false) {
     tgtVt.clear();
 
     for (int i = 0; i < srcVt.size(); ++i) {
 
       Vec4f postRotVt = srcVt[i];
       Mat4f::multiply(postRotVt, camera, srcVt[i]);
-      
+      if (isRight)
+        Mat4f::multiply(postRotVt, eye, postRotVt);
+
       // projection onto R3
       Vec3f newVt = Vec3f(
         postRotVt[1] / (1.f - postRotVt[0]),
@@ -77,13 +62,13 @@ struct HyperApp : OmniApp {
     }
   }
 
-  void generateMesh(Mesh& targetMesh, std::vector<Vec3f>& srcVt, HSV meshColor) {
-    targetMesh.reset();
+  void generateMesh(Mesh& tgtMesh, const std::vector<Vec3f>& srcVt, HSV meshColor) {
+    tgtMesh.reset();
 
-    targetMesh.primitive(Graphics::LINE_STRIP);
+    tgtMesh.primitive(Graphics::LINE_STRIP);
     for (int i = 0; i < srcVt.size(); ++i) {
-      targetMesh.vertex(srcVt[i]);
-      targetMesh.color(meshColor);  
+      tgtMesh.vertex(srcVt[i]);
+      tgtMesh.color(meshColor);  
     }
   }
 
@@ -105,53 +90,64 @@ struct HyperApp : OmniApp {
       0.f, 0.f, cos(theta), -sin(theta),
       0.f, 0.f, sin(theta), cos(theta));
 
-    epsilon = 0.01f;
+    epsilon = 0.3f;
     eye = Mat4f(
       cos(epsilon), 0.f, 0.f, -sin(epsilon),
       0.f, 1.f, 0.f, 0.f,
       0.f, 0.f, 1.f, 0.f,
       sin(epsilon), 0.f, 0.f, cos(epsilon));
 
-    hypercube_vertices.resize(vertexNumber);
+    
+    r4Vert.resize(vertNum);
+
+    for (int i = 0; i < edgeNum; ++i) {
+      s3Edge[i].resize(edgeRes);
+      leftR3Edge[i].resize(edgeRes);
+      rightR3Edge[i].resize(edgeRes);
+    }
 
     // list of vertices for hypercube
-    hypercube_vertices[0]  = Vec4f(-1.0,-1.0,-1.0,-1.0);
-    hypercube_vertices[1]  = Vec4f(-1.0,-1.0,-1.0, 1.0);
-    hypercube_vertices[2]  = Vec4f(-1.0,-1.0, 1.0,-1.0);
-    hypercube_vertices[3]  = Vec4f(-1.0,-1.0, 1.0, 1.0);
-    hypercube_vertices[4]  = Vec4f(-1.0, 1.0,-1.0,-1.0);
-    hypercube_vertices[5]  = Vec4f(-1.0, 1.0,-1.0, 1.0);
-    hypercube_vertices[6]  = Vec4f(-1.0, 1.0, 1.0,-1.0);
-    hypercube_vertices[7]  = Vec4f(-1.0, 1.0, 1.0, 1.0);
-    hypercube_vertices[8]  = Vec4f( 1.0,-1.0,-1.0,-1.0);
-    hypercube_vertices[9]  = Vec4f( 1.0,-1.0,-1.0, 1.0);
-    hypercube_vertices[10] = Vec4f( 1.0,-1.0, 1.0,-1.0);
-    hypercube_vertices[11] = Vec4f( 1.0,-1.0, 1.0, 1.0);
-    hypercube_vertices[12] = Vec4f( 1.0, 1.0,-1.0,-1.0);
-    hypercube_vertices[13] = Vec4f( 1.0, 1.0,-1.0, 1.0);
-    hypercube_vertices[14] = Vec4f( 1.0, 1.0, 1.0,-1.0);
-    hypercube_vertices[15] = Vec4f( 1.0, 1.0, 1.0, 1.0);
-
-    for (int i = 0; i < edgeNumber; ++i)
-      r4Edge[i].resize(edgeResolution);
+    r4Vert[0]  = Vec4f(-1.0,-1.0,-1.0,-1.0);
+    r4Vert[1]  = Vec4f(-1.0,-1.0,-1.0, 1.0);
+    r4Vert[2]  = Vec4f(-1.0,-1.0, 1.0,-1.0);
+    r4Vert[3]  = Vec4f(-1.0,-1.0, 1.0, 1.0);
+    r4Vert[4]  = Vec4f(-1.0, 1.0,-1.0,-1.0);
+    r4Vert[5]  = Vec4f(-1.0, 1.0,-1.0, 1.0);
+    r4Vert[6]  = Vec4f(-1.0, 1.0, 1.0,-1.0);
+    r4Vert[7]  = Vec4f(-1.0, 1.0, 1.0, 1.0);
+    r4Vert[8]  = Vec4f( 1.0,-1.0,-1.0,-1.0);
+    r4Vert[9]  = Vec4f( 1.0,-1.0,-1.0, 1.0);
+    r4Vert[10] = Vec4f( 1.0,-1.0, 1.0,-1.0);
+    r4Vert[11] = Vec4f( 1.0,-1.0, 1.0, 1.0);
+    r4Vert[12] = Vec4f( 1.0, 1.0,-1.0,-1.0);
+    r4Vert[13] = Vec4f( 1.0, 1.0,-1.0, 1.0);
+    r4Vert[14] = Vec4f( 1.0, 1.0, 1.0,-1.0);
+    r4Vert[15] = Vec4f( 1.0, 1.0, 1.0, 1.0);
 
     int k = 0;
-    for (int i = 0; i < vertexNumber; ++i) {
-      for (int j = i + 1; j < vertexNumber; ++j) {
-        Vec4f dist = (hypercube_vertices[i] - hypercube_vertices[j]) * 0.5f;
+    for (int i = 0; i < vertNum; ++i) {
+      for (int j = i + 1; j < vertNum; ++j) {
+        Vec4f dist = (r4Vert[i] - r4Vert[j]) * 0.5f;
         if (dist.mag() == 1.f) {
-          generateEdge(r4Edge[k++], hypercube_vertices[i], hypercube_vertices[j]);
+          generateEdge(s3Edge[k++], r4Vert[i], r4Vert[j]);
         }
       }
     }
 
-    cout << vertexNumber << " vertices -> " << k << " edges" << endl;
+    cout << vertNum << " vertices -> " << k << " edges" << endl;
+    if (k != edgeNum) {
+      cout << "Error: Predefined Edge Number didn't match generated Edge Number!" << endl;
+    }
 
-    edgeMesh.resize(edgeNumber);    
+    leftMesh.reserve(edgeNum);
+    rightMesh.reserve(edgeNum);
 
-    for(int i = 0; i < edgeNumber; ++i) {
-      projectR4toR3(s3Edge[i], r4Edge[i]);
-      generateMesh(edgeMesh[i], s3Edge[i], HSV((float)i / (float)edgeNumber, 1.f, 1.f));
+    for(int i = 0; i < edgeNum; ++i) {
+      projectS3toR3(leftR3Edge[i], s3Edge[i], false);
+      projectS3toR3(rightR3Edge[i], s3Edge[i], true);
+
+      generateMesh(leftMesh[i], leftR3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f));
+      generateMesh(rightMesh[i], rightR3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f));
     }
   } // HyperApp()
   
@@ -173,10 +169,14 @@ struct HyperApp : OmniApp {
       g.pointSize(6);
       g.lineWidth(8);
       
-      for(int i = 0; i < edgeNumber; ++i) {
-        projectR4toR3(s3Edge[i], r4Edge[i]);
-        generateMesh(edgeMesh[i], s3Edge[i], HSV((float)i / (float)edgeNumber, 1.f, 1.f));
-        g.draw(edgeMesh[i]);
+      for(int i = 0; i < edgeNum; ++i) {
+        projectS3toR3(leftR3Edge[i], s3Edge[i], false);
+        projectS3toR3(rightR3Edge[i], s3Edge[i], true);
+
+        generateMesh(leftMesh[i], leftR3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f));
+        generateMesh(rightMesh[i], rightR3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f));
+        if (omni().currentEye() == 0) g.draw(leftMesh[i]);
+        else g.draw(rightMesh[i]);
       }
     g.popMatrix();
   } // onDraw
@@ -208,12 +208,14 @@ struct HyperApp : OmniApp {
       cos(theta), -sin(theta), 0.f, 0.f,
       sin(theta), cos(theta), 0.f, 0.f,
       0.f, 0.f, cos(theta), -sin(theta),
-      0.f, 0.f, sin(theta), cos(theta));break;
+      0.f, 0.f, sin(theta), cos(theta)); break;
       case 't': theta += 0.1f; camera = Mat4f(
       cos(theta), -sin(theta), 0.f, 0.f,
       sin(theta), cos(theta), 0.f, 0.f,
       0.f, 0.f, cos(theta), -sin(theta),
-      0.f, 0.f, sin(theta), cos(theta));break;
+      0.f, 0.f, sin(theta), cos(theta)); break;
+      // case '1': omni().mode(OmniStereo::DUAL).stereo(true); break;
+      // case '2': omni().mode(OmniStereo::ANAGLYPH).stereo(true); break;
       default: break;
     }
 
