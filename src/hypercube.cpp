@@ -90,7 +90,7 @@ struct HyperApp : OmniApp {
       0.f, 0.f, cos(theta), -sin(theta),
       0.f, 0.f, sin(theta), cos(theta));
 
-    epsilon = 0.3f;
+    epsilon = 0.01f;
     eye = Mat4f(
       cos(epsilon), 0.f, 0.f, -sin(epsilon),
       0.f, 1.f, 0.f, 0.f,
@@ -198,7 +198,19 @@ struct HyperApp : OmniApp {
     } else if (m.addressPattern() == "/as_key") {
       m >> i; 
       printf("OSC /as_key %d\n", i);
-      if (i == ' ') { /**/ }
+      if (i == 'g') {
+        theta -= 0.1f; camera = Mat4f(
+        cos(theta), -sin(theta), 0.f, 0.f,
+        sin(theta), cos(theta), 0.f, 0.f,
+        0.f, 0.f, cos(theta), -sin(theta),
+        0.f, 0.f, sin(theta), cos(theta));
+      } else if (i == 't') {
+        theta += 0.1f; camera = Mat4f(
+        cos(theta), -sin(theta), 0.f, 0.f,
+        sin(theta), cos(theta), 0.f, 0.f,
+        0.f, 0.f, cos(theta), -sin(theta),
+        0.f, 0.f, sin(theta), cos(theta));
+      }
     } else { m.print(); } // as_key
   } // onMessage
   
