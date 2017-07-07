@@ -211,13 +211,13 @@ struct HyperApp : OmniApp {
         0.f, 0.f, cos(theta), -sin(theta),
         0.f, 0.f, sin(theta), cos(theta));
       } else if (i == '[') {
-        epsilon -= 0.001f; eye = Mat4f(
+        epsilon -= 0.01f; eye = Mat4f(
         cos(epsilon), 0.f, 0.f, -sin(epsilon),
         0.f, 1.f, 0.f, 0.f,
         0.f, 0.f, 1.f, 0.f,
         sin(epsilon), 0.f, 0.f, cos(epsilon));
       } else if (i == ']') {
-        epsilon += 0.001f; eye = Mat4f(
+        epsilon += 0.01f; eye = Mat4f(
         cos(epsilon), 0.f, 0.f, -sin(epsilon),
         0.f, 1.f, 0.f, 0.f,
         0.f, 0.f, 1.f, 0.f,
@@ -239,12 +239,12 @@ struct HyperApp : OmniApp {
       sin(theta), cos(theta), 0.f, 0.f,
       0.f, 0.f, cos(theta), -sin(theta),
       0.f, 0.f, sin(theta), cos(theta)); break;
-      case '[': epsilon -= 0.001f; eye = Mat4f(
+      case '[': epsilon -= 0.01f; eye = Mat4f(
       cos(epsilon), 0.f, 0.f, -sin(epsilon),
       0.f, 1.f, 0.f, 0.f,
       0.f, 0.f, 1.f, 0.f,
       sin(epsilon), 0.f, 0.f, cos(epsilon)); break;
-      case ']': epsilon += 0.001f; eye = Mat4f(
+      case ']': epsilon += 0.01f; eye = Mat4f(
       cos(epsilon), 0.f, 0.f, -sin(epsilon),
       0.f, 1.f, 0.f, 0.f,
       0.f, 0.f, 1.f, 0.f,
