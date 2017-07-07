@@ -210,6 +210,18 @@ struct HyperApp : OmniApp {
         sin(theta), cos(theta), 0.f, 0.f,
         0.f, 0.f, cos(theta), -sin(theta),
         0.f, 0.f, sin(theta), cos(theta));
+      } else if (i == '[') {
+        epsilon -= 0.001f; eye = Mat4f(
+        cos(epsilon), 0.f, 0.f, -sin(epsilon),
+        0.f, 1.f, 0.f, 0.f,
+        0.f, 0.f, 1.f, 0.f,
+        sin(epsilon), 0.f, 0.f, cos(epsilon));
+      } else if (i == ']') {
+        epsilon += 0.001f; eye = Mat4f(
+        cos(epsilon), 0.f, 0.f, -sin(epsilon),
+        0.f, 1.f, 0.f, 0.f,
+        0.f, 0.f, 1.f, 0.f,
+        sin(epsilon), 0.f, 0.f, cos(epsilon));
       }
     } else { m.print(); } // as_key
   } // onMessage
@@ -227,6 +239,16 @@ struct HyperApp : OmniApp {
       sin(theta), cos(theta), 0.f, 0.f,
       0.f, 0.f, cos(theta), -sin(theta),
       0.f, 0.f, sin(theta), cos(theta)); break;
+      case '[': epsilon -= 0.001f; eye = Mat4f(
+      cos(epsilon), 0.f, 0.f, -sin(epsilon),
+      0.f, 1.f, 0.f, 0.f,
+      0.f, 0.f, 1.f, 0.f,
+      sin(epsilon), 0.f, 0.f, cos(epsilon)); break;
+      case ']': epsilon += 0.001f; eye = Mat4f(
+      cos(epsilon), 0.f, 0.f, -sin(epsilon),
+      0.f, 1.f, 0.f, 0.f,
+      0.f, 0.f, 1.f, 0.f,
+      sin(epsilon), 0.f, 0.f, cos(epsilon)); break;
       // case '1': omni().mode(OmniStereo::DUAL).stereo(true); break;
       // case '2': omni().mode(OmniStereo::ANAGLYPH).stereo(true); break;
       default: break;
