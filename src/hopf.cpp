@@ -194,7 +194,20 @@ struct HyperApp : OmniApp {
     } else if (m.addressPattern() == "/as_key") {
       m >> i; 
       printf("OSC /as_key %d\n", i);
-      if (i == ' ') { /**/ }
+      switch(i) {
+        case 'g': theta -= 0.05f; break;
+        case 't': theta += 0.05f; break;
+        case 'h': phi -= 0.05f; break;
+        case 'y': phi += 0.05f; break;
+        default: break;
+      }
+
+      camera = Mat4f(
+        cos(theta), 0.f, 0.f, -sin(theta),
+        0.f, cos(theta+phi), -sin(theta+phi), 0.f,
+        0.f, sin(theta+phi), cos(theta+phi), 0.f,
+        sin(theta), 0.f, 0.f, cos(theta));
+      }
     } else { m.print(); } // as_key
   } // onMessage
   
