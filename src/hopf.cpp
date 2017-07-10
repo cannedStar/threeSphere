@@ -207,7 +207,6 @@ struct HyperApp : OmniApp {
         0.f, cos(theta+phi), -sin(theta+phi), 0.f,
         0.f, sin(theta+phi), cos(theta+phi), 0.f,
         sin(theta), 0.f, 0.f, cos(theta));
-      }
     } else { m.print(); } // as_key
   } // onMessage
   
