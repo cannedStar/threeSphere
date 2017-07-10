@@ -26,7 +26,7 @@ struct HyperApp : OmniApp {
   std::vector<Vec3f> s3Edge[edgeNumber];
   std::vector<Mesh> edgeMesh;
 
-  float theta;
+  float theta, phi;
   float epsilon;
   Mat4f camera;
   Mat4f eye;
@@ -97,12 +97,13 @@ struct HyperApp : OmniApp {
     initWindow();
     initAudio();
 
-    theta = 0.5f;
+    theta = 0.f;
+    phi = 0.f;
     camera = Mat4f(
-      cos(theta), -sin(theta), 0.f, 0.f,
-      sin(theta), cos(theta), 0.f, 0.f,
-      0.f, 0.f, cos(theta), -sin(theta),
-      0.f, 0.f, sin(theta), cos(theta));
+      cos(theta), 0.f, 0.f, -sin(theta),
+      0.f, cos(theta+phi), -sin(theta+phi), 0.f,
+      0.f, sin(theta+phi), cos(theta+phi), 0.f,
+      sin(theta), 0.f, 0.f, cos(theta));
 
     epsilon = 0.01f;
     eye = Mat4f(
@@ -167,7 +168,7 @@ struct HyperApp : OmniApp {
       g.blending(true);
       g.blendModeTrans();
       g.pointSize(6);
-      g.lineWidth(8);
+      g.lineWidth(5);
       
       for(int i = 0; i < edgeNumber; ++i) {
         projectR4toR3(s3Edge[i], r4Edge[i]);
@@ -200,18 +201,18 @@ struct HyperApp : OmniApp {
   // KEYBOARD commands local
   virtual bool onKeyDown(const Keyboard& k){
     switch (k.key()) {
-      case 'g': theta -= 0.1f; camera = Mat4f(
-      cos(theta), -sin(theta), 0.f, 0.f,
-      sin(theta), cos(theta), 0.f, 0.f,
-      0.f, 0.f, cos(theta), -sin(theta),
-      0.f, 0.f, sin(theta), cos(theta));break;
-      case 't': theta += 0.1f; camera = Mat4f(
-      cos(theta), -sin(theta), 0.f, 0.f,
-      sin(theta), cos(theta), 0.f, 0.f,
-      0.f, 0.f, cos(theta), -sin(theta),
-      0.f, 0.f, sin(theta), cos(theta));break;
+      case 'g': theta -= 0.05f; break;
+      case 't': theta += 0.05f; break;
+      case 'h': phi -= 0.05f; break;
+      case 'y': phi += 0.05f; break;
       default: break;
     }
+
+    camera = Mat4f(
+      cos(theta), 0.f, 0.f, -sin(theta),
+      0.f, cos(theta+phi), -sin(theta+phi), 0.f,
+      0.f, sin(theta+phi), cos(theta+phi), 0.f,
+      sin(theta), 0.f, 0.f, cos(theta));
 
     return true;
   } // onKeyDown

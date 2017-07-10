@@ -14,7 +14,7 @@ using namespace std;
 
 static const int vertNum = 16;
 static const int edgeNum = 32;
-static const int edgeRes = 8;
+static const int edgeRes = 128;
 
 struct HyperApp : OmniApp {
 
@@ -83,7 +83,7 @@ struct HyperApp : OmniApp {
     initWindow();
     initAudio();
 
-    theta = 0.5f;
+    theta = 0.0f;
     camera = Mat4f(
       cos(theta), -sin(theta), 0.f, 0.f,
       sin(theta), cos(theta), 0.f, 0.f,
@@ -168,7 +168,7 @@ struct HyperApp : OmniApp {
       g.blending(true);
       g.blendModeTrans();
       g.pointSize(6);
-      g.lineWidth(8);
+      g.lineWidth(5);
       
       for(int i = 0; i < edgeNum; ++i) {
         projectS3toR3(leftR3Edge[i], s3Edge[i], false);
