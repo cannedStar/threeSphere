@@ -23,10 +23,9 @@ struct HyperApp : OmniApp {
 
   std::vector<Vec4f> r4Vert;
   std::vector<Vec4f> s3Edge[edgeNum];
-  std::vector<Vec3f> leftR3Edge[edgeNum], rightR3Edge[edgeNum];
   std::vector<Mesh> leftMesh, rightMesh;
 
-  float theta;
+  float theta, phi;
   float epsilon;
   Mat4f camera;
   Mat4f eye;
@@ -37,15 +36,17 @@ struct HyperApp : OmniApp {
       float t = (float)i / ((float)edgeRes - 1.f);
       Vec4f newPoint = srcVt1 + t * (srcVt2 - srcVt1);
 
+      // projection onto S3
       tgtEdge[i] = newPoint.normalized();
     }
   }
 
-  void projectS3toR3(std::vector<Vec3f>& tgtVt, const std::vector<Vec4f>& srcVt, const bool isRight = false) {
-    tgtVt.clear();
+  void generateMesh(Mesh& tgtMesh, const std::vector<Vec4f>& srcVt, HSV meshColor, const bool isRight = false) {
+    tgtMesh.reset();
+    tgtMesh.primitive(Graphics::LINE_STRIP);
 
+    // apply camera rotation
     for (int i = 0; i < srcVt.size(); ++i) {
-
       Vec4f postRotVt = srcVt[i];
       Mat4f::multiply(postRotVt, camera, srcVt[i]);
       if (isRight)
@@ -58,32 +59,27 @@ struct HyperApp : OmniApp {
         postRotVt[3] / (1.f - postRotVt[0])
         );
 
-      tgtVt.push_back(newVt);
+      tgtMesh.vertex(newVt);
+      tgtMesh.color(meshColor); 
     }
   }
 
-  void generateMesh(Mesh& tgtMesh, const std::vector<Vec3f>& srcVt, HSV meshColor) {
-    tgtMesh.reset();
-
-    tgtMesh.primitive(Graphics::LINE_STRIP);
-    for (int i = 0; i < srcVt.size(); ++i) {
-      tgtMesh.vertex(srcVt[i]);
-      tgtMesh.color(meshColor);  
-    }
-  }
+  // add in rotation functions
 
   // CONSTRUCTOR
   HyperApp() {
 
     nav().pos(0.0, 0.0, 0.0);
     light.pos(0, 10.0, 0);
-    light.specular(Color(0,0,0));
-    light.diffuse(Color(0,0,0));
+    light.specular(Color(0.1,0.1,0.1));
+    light.diffuse(Color(0.2,0.2,0.2));
     light.ambient(Color(1,1,1));
     initWindow();
     initAudio();
 
-    theta = 0.0f;
+    lens().eyeSep(0.0); // set eyeSep to zero
+
+    theta = 0.f;
     camera = Mat4f(
       cos(theta), -sin(theta), 0.f, 0.f,
       sin(theta), cos(theta), 0.f, 0.f,
@@ -100,11 +96,8 @@ struct HyperApp : OmniApp {
     
     r4Vert.resize(vertNum);
 
-    for (int i = 0; i < edgeNum; ++i) {
+    for (int i = 0; i < edgeNum; ++i)
       s3Edge[i].resize(edgeRes);
-      leftR3Edge[i].resize(edgeRes);
-      rightR3Edge[i].resize(edgeRes);
-    }
 
     // list of vertices for hypercube
     r4Vert[0]  = Vec4f(-1.0,-1.0,-1.0,-1.0);
@@ -144,11 +137,8 @@ struct HyperApp : OmniApp {
     rightMesh.resize(edgeNum);
 
     for(int i = 0; i < edgeNum; ++i) {
-      projectS3toR3(leftR3Edge[i], s3Edge[i], false);
-      projectS3toR3(rightR3Edge[i], s3Edge[i], true);
-
-      generateMesh(leftMesh[i], leftR3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f));
-      generateMesh(rightMesh[i], rightR3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f));
+      generateMesh(leftMesh[i], s3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f), false);
+      generateMesh(rightMesh[i], s3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f), true);
     }
   } // HyperApp()
   
@@ -171,11 +161,9 @@ struct HyperApp : OmniApp {
       g.lineWidth(5);
       
       for(int i = 0; i < edgeNum; ++i) {
-        projectS3toR3(leftR3Edge[i], s3Edge[i], false);
-        projectS3toR3(rightR3Edge[i], s3Edge[i], true);
-
-        generateMesh(leftMesh[i], leftR3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f));
-        generateMesh(rightMesh[i], rightR3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f));
+        generateMesh(leftMesh[i], s3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f), false);
+        generateMesh(rightMesh[i], s3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f), true);
+        
         if (omni().currentEye() == 0) g.draw(leftMesh[i]);
         else g.draw(rightMesh[i]);
       }
