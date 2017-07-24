@@ -84,7 +84,7 @@ struct HyperApp : OmniApp {
     initWindow();
     initAudio();
 
-    lens().eyeSep(0.03); // set eyeSep to zero
+    lens().near(0.02).eyeSep(0.03); // set eyeSep to zero
 
     theta = 0.f;
     phi = 0.f;
