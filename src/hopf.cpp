@@ -84,7 +84,7 @@ struct HyperApp : OmniApp {
     initWindow();
     initAudio();
 
-    lens().eyeSep(0.001); // set eyeSep to zero
+    lens().eyeSep(0.03); // set eyeSep to zero
 
     theta = 0.f;
     phi = 0.f;
@@ -94,7 +94,7 @@ struct HyperApp : OmniApp {
       0.f, sin(theta+phi), cos(theta+phi), 0.f,
       sin(theta), 0.f, 0.f, cos(theta));
 
-    epsilon = 0.01f;
+    epsilon = 0.00f;
     eye = Mat4f(
       cos(epsilon), 0.f, 0.f, -sin(epsilon),
       0.f, 1.f, 0.f, 0.f,
@@ -174,6 +174,8 @@ struct HyperApp : OmniApp {
         case 't': theta += 0.05f; break;
         case 'h': phi -= 0.05f; break;
         case 'y': phi += 0.05f; break;
+        case '[': epsilon -= 0.01f; break;
+        case ']': epsilon += 0.01f; break;
         default: break;
       }
 
@@ -182,6 +184,12 @@ struct HyperApp : OmniApp {
         0.f, cos(theta+phi), -sin(theta+phi), 0.f,
         0.f, sin(theta+phi), cos(theta+phi), 0.f,
         sin(theta), 0.f, 0.f, cos(theta));
+
+      eye = Mat4f(
+        cos(epsilon), 0.f, 0.f, -sin(epsilon),
+        0.f, 1.f, 0.f, 0.f,
+        0.f, 0.f, 1.f, 0.f,
+        sin(epsilon), 0.f, 0.f, cos(epsilon));
     } else { m.print(); } // as_key
   } // onMessage
   
@@ -192,6 +200,8 @@ struct HyperApp : OmniApp {
       case 't': theta += 0.05f; break;
       case 'h': phi -= 0.05f; break;
       case 'y': phi += 0.05f; break;
+      case '[': epsilon -= 0.01f; break;
+      case ']': epsilon += 0.01f; break;
       default: break;
     }
 
@@ -200,6 +210,12 @@ struct HyperApp : OmniApp {
       0.f, cos(theta+phi), -sin(theta+phi), 0.f,
       0.f, sin(theta+phi), cos(theta+phi), 0.f,
       sin(theta), 0.f, 0.f, cos(theta));
+
+    eye = Mat4f(
+      cos(epsilon), 0.f, 0.f, -sin(epsilon),
+      0.f, 1.f, 0.f, 0.f,
+      0.f, 0.f, 1.f, 0.f,
+      sin(epsilon), 0.f, 0.f, cos(epsilon));
 
     return true;
   } // onKeyDown

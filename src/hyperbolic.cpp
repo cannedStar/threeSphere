@@ -120,7 +120,7 @@ struct HyperApp : OmniApp {
     initWindow();
     initAudio();
 
-    lens().eyeSep(0.001); // set eyeSep to zero
+    lens().eyeSep(0.03); // set eyeSep to zero
 
     theta = 0.f;
     epsilon = 0.f;
@@ -133,7 +133,7 @@ struct HyperApp : OmniApp {
     //   0.f, 0.f, cos(theta), -sin(theta),
     //   0.f, 0.f, sin(theta), cos(theta));
 
-    eyeAngle = 0.01f;
+    eyeAngle = 0.f;
     eye.setIdentity();
     eye = rotateEpsilon(eye, eyeAngle);
 

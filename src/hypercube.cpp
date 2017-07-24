@@ -77,7 +77,7 @@ struct HyperApp : OmniApp {
     initWindow();
     initAudio();
 
-    lens().eyeSep(0.001); // set eyeSep to zero
+    lens().eyeSep(0.03); // set eyeSep to zero
 
     theta = 0.f;
     camera = Mat4f(
@@ -86,7 +86,7 @@ struct HyperApp : OmniApp {
       0.f, 0.f, cos(theta), -sin(theta),
       0.f, 0.f, sin(theta), cos(theta));
 
-    epsilon = 0.01f;
+    epsilon = 0.f;
     eye = Mat4f(
       cos(epsilon), 0.f, 0.f, -sin(epsilon),
       0.f, 1.f, 0.f, 0.f,
