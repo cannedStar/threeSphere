@@ -12,9 +12,9 @@
 using namespace al;
 using namespace std;
 
-static const int vertNum = 16;
-static const int edgeNum = 120;
-static const int edgeRes = 512;
+static const int vertNum = 64;
+static const int edgeNum = 2016;
+static const int edgeRes = 256;
 
 struct HyperApp : OmniApp {
 
@@ -78,13 +78,13 @@ struct HyperApp : OmniApp {
 
     nav().pos(0.0, 0.0, 0.0);
     light.pos(0, 10.0, 0);
-    light.specular(Color(0.1,0.1,0.1));
+    light.specular(Color(0.3,0.3,0.3));
     light.diffuse(Color(0.2,0.2,0.2));
     light.ambient(Color(1,1,1));
     initWindow();
     initAudio();
 
-    lens().near(0.02).eyeSep(0.03); // set eyeSep to zero
+    lens().eyeSep(0.03); // set eyeSep to zero
 
     theta = 0.f;
     phi = 0.f;
@@ -113,7 +113,7 @@ struct HyperApp : OmniApp {
 
     cout << vertNum << " vertices -> " << k << " edges" << endl;
     if (k != edgeNum) {
-      cout << "Error: Predefined Edge Number didn't match generated Edge Number!" << endl;
+      cout << "Error: Predefined Edge Number(" << edgeNum << ") didn't match generated Edge Number(" << k << ")!" << endl;
     }
 
     leftMesh.resize(edgeNum);
@@ -141,7 +141,7 @@ struct HyperApp : OmniApp {
       g.blending(true);
       g.blendModeTrans();
       g.pointSize(6);
-      g.lineWidth(5);
+      g.lineWidth(10);
       
       for(int i = 0; i < edgeNum; ++i) {
         generateMesh(leftMesh[i], s3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f), false);
