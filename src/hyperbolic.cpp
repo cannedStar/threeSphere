@@ -32,7 +32,7 @@ struct HyperApp : OmniApp {
 
   std::vector<Mat4f> generator;
   Vec4f seed = Vec4f(1, 0, 0, 0);
-  int depth = 5;
+  int depth = 2;
 
   //RTR^-1
   // z axis
@@ -42,31 +42,34 @@ struct HyperApp : OmniApp {
     h3Edge.clear();
 
     h3Vert.push_back(seed);
-    
+    int currentSize = 0;
+
     for (int d = 0; d < depth; ++d) {
-      int currentSize = h3Vert.size();
+      int formerSize = currentSize;
+      currentSize = h3Vert.size();
       // cout << "current depth = " << d << endl;
       // cout << " current size = " << currentSize << endl;
 
-      for (int j = 0; j < currentSize; ++j) {
+      for (int j = formerSize; j < currentSize; ++j) {
         for (int i = 0; i < gen.size(); ++i) {
           Vec4f newPoint;
           // gen[i].print();
           // h3Vert[j].print();
           Mat4f::multiply(newPoint, gen[i], h3Vert[j]);
 
-          bool unique = true;
+          // bool unique = true;
 
-          for (int k = 0; k < h3Vert.size(); ++k) {
-            if (newPoint == h3Vert[k]) {
-              unique = false;
-            }
-          }
+          // for (int k = 0; k < h3Vert.size(); ++k) {
+          //   if (newPoint == h3Vert[k]) {
+          //     unique = false;
+          //   }
+          // }
 
-          if(unique) {
+          // if(unique) {
+            cout << newPoint << endl;
             h3Vert.push_back(newPoint);
             h3Edge.push_back(Vec2i(j, h3Vert.size()-1));
-          }
+          // }
         }
       }
     }
@@ -185,21 +188,20 @@ struct HyperApp : OmniApp {
     genAinv = genA;
     invert(genAinv);
 
-    genA.print();
-    genAinv.print();
-
     genBinv = genB;
     invert(genBinv);
 
+    genA.print();
+    genAinv.print();
     genB.print();
     genBinv.print();
 
     generator.resize(4);
 
-    generator[0] = genA;
-    generator[1] = genB;
-    generator[2] = genAinv;
-    generator[3] = genBinv;
+    generator[1] = genA;
+    generator[2] = genB;
+    generator[3] = genAinv;
+    generator[0] = genBinv;
 
     generateEdge(generator, seed, depth);
 
