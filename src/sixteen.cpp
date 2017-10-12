@@ -11,7 +11,7 @@ using namespace al;
 using namespace std;
 
 static const int vertexNumber = 8;
-static const int edgeNumber = 24;
+static const int edgeNumber = 30;
 static const int edgeResolution = 128;
 
 struct HyperApp : OmniApp {
@@ -91,7 +91,7 @@ struct HyperApp : OmniApp {
       for (int i = 0; i < vertexNumber; ++i) {
         for (int j = i + 1; j < vertexNumber; ++j) {
           Vec4f dist = (hypercube_vertices[i] - hypercube_vertices[j]) * 0.5f;
-          if (dist.mag() == 1.f) {
+          if (dist.mag() < 1.8f) {
             generateEdge(r4Edge[k], hypercube_vertices[i], hypercube_vertices[j]);
             k++;
           }
