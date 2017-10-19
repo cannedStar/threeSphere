@@ -12,15 +12,16 @@
 using namespace al;
 using namespace std;
 
-static const int vertNum = 32;
-static const int edgeNum = 496;
-static const int edgeRes = 256;
+static const int vertNum = 128;
+static const int edgeNum = 512;
+static const int edgeRes = 128;
 
 struct HyperApp : OmniApp {
 
   Material material;
   Light light;
 
+  std::vector<Vec4f> r4Vert;
   std::vector<Vec4f> s3Edge[edgeNum];
   std::vector<Mesh> leftMesh, rightMesh;
 
@@ -29,20 +30,11 @@ struct HyperApp : OmniApp {
   Mat4f camera;
   Mat4f eye;
 
-  void generateEdge(std::vector<Vec4f>& tgtEdge, int v1, int v2) {
-    
+  void generateEdge(std::vector<Vec4f>& tgtEdge, const Vec4f& srcVt1, const Vec4f& srcVt2) {
+
     for (int i = 0; i < edgeRes; ++i) {
-      float t = 2.f * M_PI * (float)i / ((float)edgeRes - 1.f);
-
-      float R_ = (float)v1;
-      float T_ = 2.f * M_PI * (float)v2 / (float)(vertNum - 1);
-
-      Vec4f newPoint = Vec4f(
-        R_ / sqrt(R_*R_ + 1.f) * cos(T_ + t),
-        R_ / sqrt(R_*R_ + 1.f) * sin(T_ + t),
-        1.f / sqrt(R_*R_ + 1.f) * cos(t),
-        1.f / sqrt(R_*R_ + 1.f) * sin(t)
-        );
+      float t = (float)i / ((float)edgeRes - 1.f);
+      Vec4f newPoint = srcVt1 + t * (srcVt2 - srcVt1);
 
       // projection onto S3
       tgtEdge[i] = newPoint.normalized();
@@ -53,12 +45,13 @@ struct HyperApp : OmniApp {
     tgtMesh.reset();
     tgtMesh.primitive(Graphics::LINE_STRIP);
 
+    // apply camera rotation
     for (int i = 0; i < srcVt.size(); ++i) {
       Vec4f postRotVt = srcVt[i];
       Mat4f::multiply(postRotVt, camera, srcVt[i]);
       if (isRight)
         Mat4f::multiply(postRotVt, eye, postRotVt);
-      
+
       // projection onto R3
       Vec3f newVt = Vec3f(
         postRotVt[1] / (1.f - postRotVt[0]),
@@ -71,6 +64,32 @@ struct HyperApp : OmniApp {
     }
   }
 
+  void addPermutation(Vec4f seed, int& index, bool even) {
+    cout << seed << endl;
+    int i0 = (seed[0] != 0)? 1 : 0;
+    int i1 = (seed[1] != 0)? 1 : 0;
+    int i2 = (seed[2] != 0)? 1 : 0;
+    int i3 = (seed[3] != 0)? 1 : 0;
+
+    cout << " " << i0 << " " << i1 << " " << i2 << " " << i3 << endl;
+
+    for (int i = 0; i < i0; ++i) {
+      for (int j = 0; j < i1; ++j) {
+        for (int k = 0; k < i2; ++k) {
+          for (int l = 0; l < i3; ++l) {
+            if (even) 
+              if((i + j + k + l) % 2 != 0) continue;
+            cout << i << ", " << j << ", " << k << ", " << l << endl;
+            r4Vert[index++] = Vec4f(seed[0] * pow(-1, i),
+                                    seed[1] * pow(-1, j),
+                                    seed[2] * pow(-1, k),
+                                    seed[3] * pow(-1, l));
+          }
+        }
+      }
+    }
+  }
+
   // add in rotation functions
 
   // CONSTRUCTOR
@@ -78,7 +97,7 @@ struct HyperApp : OmniApp {
 
     nav().pos(0.0, 0.0, 0.0);
     light.pos(0, 10.0, 0);
-    light.specular(Color(0.3,0.3,0.3));
+    light.specular(Color(0.1,0.1,0.1));
     light.diffuse(Color(0.2,0.2,0.2));
     light.ambient(Color(1,1,1));
     initWindow();
@@ -87,33 +106,54 @@ struct HyperApp : OmniApp {
     lens().eyeSep(0.03); // set eyeSep to zero
 
     theta = 0.f;
-    phi = 0.f;
     camera = Mat4f(
-      cos(theta), 0.f, 0.f, -sin(theta),
-      0.f, cos(theta+phi), -sin(theta+phi), 0.f,
-      0.f, sin(theta+phi), cos(theta+phi), 0.f,
-      sin(theta), 0.f, 0.f, cos(theta));
+      cos(theta), -sin(theta), 0.f, 0.f,
+      sin(theta), cos(theta), 0.f, 0.f,
+      0.f, 0.f, cos(theta), -sin(theta),
+      0.f, 0.f, sin(theta), cos(theta));
 
-    epsilon = 0.00f;
+    epsilon = 0.f;
     eye = Mat4f(
       cos(epsilon), 0.f, 0.f, -sin(epsilon),
       0.f, 1.f, 0.f, 0.f,
       0.f, 0.f, 1.f, 0.f,
       sin(epsilon), 0.f, 0.f, cos(epsilon));
 
+    
+    r4Vert.resize(vertNum);
+
     for (int i = 0; i < edgeNum; ++i)
       s3Edge[i].resize(edgeRes);
+
+    // list of vertices for hypercube
+    int vNum = 0;
+
+    float gold = (1.f + sqrt(5)) / 2.f;
+
+    addPermutation(Vec4f(0, 0, 2, 2), vNum, false);
+    addPermutation(Vec4f(1, 1, 1, sqrt(5)), vNum, false);
+    addPermutation(Vec4f(pow(gold, -2), gold, gold, gold), vNum, false);
+    addPermutation(Vec4f(pow(gold, -1), pow(gold, -1), pow(gold, -1), pow(gold, 2)), vNum, false);
+    addPermutation(Vec4f(0, pow(gold, -2), 1, pow(gold, 2)), vNum, true);
+    addPermutation(Vec4f(0, pow(gold, -1), gold, sqrt(5)), vNum, true);
+    addPermutation(Vec4f(pow(gold, -1), 1, gold, 2), vNum, true);
+
+    cout << vNum << endl;
 
     int k = 0;
     for (int i = 0; i < vertNum; ++i) {
       for (int j = i + 1; j < vertNum; ++j) {
-        generateEdge(s3Edge[k++], i, j);
+        Vec4f dist = (r4Vert[i] - r4Vert[j]) * 0.5f;
+        if (dist.mag() == 1.f) {
+          generateEdge(s3Edge[k], r4Vert[i], r4Vert[j]);
+          k++;
+        }
       }
     }
 
     cout << vertNum << " vertices -> " << k << " edges" << endl;
     if (k != edgeNum) {
-      cout << "Error: Predefined Edge Number(" << edgeNum << ") didn't match generated Edge Number(" << k << ")!" << endl;
+      cout << "Error: Predefined Edge Number didn't match generated Edge Number!" << endl;
     }
 
     leftMesh.resize(edgeNum);
@@ -141,7 +181,7 @@ struct HyperApp : OmniApp {
       g.blending(true);
       g.blendModeTrans();
       g.pointSize(6);
-      g.lineWidth(10);
+      g.lineWidth(5);
       
       for(int i = 0; i < edgeNum; ++i) {
         generateMesh(leftMesh[i], s3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f), false);
@@ -169,53 +209,61 @@ struct HyperApp : OmniApp {
     } else if (m.addressPattern() == "/as_key") {
       m >> i; 
       printf("OSC /as_key %d\n", i);
-      switch(i) {
-        case 'g': theta -= 0.05f; break;
-        case 't': theta += 0.05f; break;
-        case 'h': phi -= 0.05f; break;
-        case 'y': phi += 0.05f; break;
-        case '[': epsilon -= 0.01f; break;
-        case ']': epsilon += 0.01f; break;
-        default: break;
-      }
-
-      camera = Mat4f(
-        cos(theta), 0.f, 0.f, -sin(theta),
-        0.f, cos(theta+phi), -sin(theta+phi), 0.f,
-        0.f, sin(theta+phi), cos(theta+phi), 0.f,
-        sin(theta), 0.f, 0.f, cos(theta));
-
-      eye = Mat4f(
+      if (i == 'g') {
+        theta -= 0.1f; camera = Mat4f(
+        cos(theta), -sin(theta), 0.f, 0.f,
+        sin(theta), cos(theta), 0.f, 0.f,
+        0.f, 0.f, cos(theta), -sin(theta),
+        0.f, 0.f, sin(theta), cos(theta));
+      } else if (i == 't') {
+        theta += 0.1f; camera = Mat4f(
+        cos(theta), -sin(theta), 0.f, 0.f,
+        sin(theta), cos(theta), 0.f, 0.f,
+        0.f, 0.f, cos(theta), -sin(theta),
+        0.f, 0.f, sin(theta), cos(theta));
+      } else if (i == '[') {
+        epsilon -= 0.01f; eye = Mat4f(
         cos(epsilon), 0.f, 0.f, -sin(epsilon),
         0.f, 1.f, 0.f, 0.f,
         0.f, 0.f, 1.f, 0.f,
         sin(epsilon), 0.f, 0.f, cos(epsilon));
+      } else if (i == ']') {
+        epsilon += 0.01f; eye = Mat4f(
+        cos(epsilon), 0.f, 0.f, -sin(epsilon),
+        0.f, 1.f, 0.f, 0.f,
+        0.f, 0.f, 1.f, 0.f,
+        sin(epsilon), 0.f, 0.f, cos(epsilon));
+      }
     } else { m.print(); } // as_key
   } // onMessage
   
   // KEYBOARD commands local
   virtual bool onKeyDown(const Keyboard& k){
     switch (k.key()) {
-      case 'g': theta -= 0.05f; break;
-      case 't': theta += 0.05f; break;
-      case 'h': phi -= 0.05f; break;
-      case 'y': phi += 0.05f; break;
-      case '[': epsilon -= 0.01f; break;
-      case ']': epsilon += 0.01f; break;
-      default: break;
-    }
-
-    camera = Mat4f(
-      cos(theta), 0.f, 0.f, -sin(theta),
-      0.f, cos(theta+phi), -sin(theta+phi), 0.f,
-      0.f, sin(theta+phi), cos(theta+phi), 0.f,
-      sin(theta), 0.f, 0.f, cos(theta));
-
-    eye = Mat4f(
+      case 'g': theta -= 0.1f; camera = Mat4f(
+      cos(theta), -sin(theta), 0.f, 0.f,
+      sin(theta), cos(theta), 0.f, 0.f,
+      0.f, 0.f, cos(theta), -sin(theta),
+      0.f, 0.f, sin(theta), cos(theta)); break;
+      case 't': theta += 0.1f; camera = Mat4f(
+      cos(theta), -sin(theta), 0.f, 0.f,
+      sin(theta), cos(theta), 0.f, 0.f,
+      0.f, 0.f, cos(theta), -sin(theta),
+      0.f, 0.f, sin(theta), cos(theta)); break;
+      case '[': epsilon -= 0.01f; eye = Mat4f(
       cos(epsilon), 0.f, 0.f, -sin(epsilon),
       0.f, 1.f, 0.f, 0.f,
       0.f, 0.f, 1.f, 0.f,
-      sin(epsilon), 0.f, 0.f, cos(epsilon));
+      sin(epsilon), 0.f, 0.f, cos(epsilon)); break;
+      case ']': epsilon += 0.01f; eye = Mat4f(
+      cos(epsilon), 0.f, 0.f, -sin(epsilon),
+      0.f, 1.f, 0.f, 0.f,
+      0.f, 0.f, 1.f, 0.f,
+      sin(epsilon), 0.f, 0.f, cos(epsilon)); break;
+      // case '1': omni().mode(OmniStereo::DUAL).stereo(true); break;
+      // case '2': omni().mode(OmniStereo::ANAGLYPH).stereo(true); break;
+      default: break;
+    }
 
     return true;
   } // onKeyDown
