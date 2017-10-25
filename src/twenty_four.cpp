@@ -196,13 +196,13 @@ struct HyperApp : OmniApp {
       m >> i; 
       printf("OSC /as_key %d\n", i);
       if (i == 'g') {
-        theta -= 0.1f; camera = Mat4f(
+        theta -= 0.005f; camera = Mat4f(
         cos(theta), -sin(theta), 0.f, 0.f,
         sin(theta), cos(theta), 0.f, 0.f,
         0.f, 0.f, cos(theta), -sin(theta),
         0.f, 0.f, sin(theta), cos(theta));
       } else if (i == 't') {
-        theta += 0.1f; camera = Mat4f(
+        theta += 0.005f; camera = Mat4f(
         cos(theta), -sin(theta), 0.f, 0.f,
         sin(theta), cos(theta), 0.f, 0.f,
         0.f, 0.f, cos(theta), -sin(theta),
