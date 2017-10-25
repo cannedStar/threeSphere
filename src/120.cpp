@@ -12,8 +12,8 @@
 using namespace al;
 using namespace std;
 
-static const int vertNum = 128;
-static const int edgeNum = 512;
+static const int vertNum = 1633;
+static const int edgeNum = 200;
 static const int edgeRes = 128;
 
 struct HyperApp : OmniApp {
@@ -65,25 +65,47 @@ struct HyperApp : OmniApp {
   }
 
   void addPermutation(Vec4f seed, int& index, bool even) {
-    cout << seed << endl;
     int i0 = (seed[0] != 0)? 1 : 0;
     int i1 = (seed[1] != 0)? 1 : 0;
     int i2 = (seed[2] != 0)? 1 : 0;
     int i3 = (seed[3] != 0)? 1 : 0;
 
-    cout << " " << i0 << " " << i1 << " " << i2 << " " << i3 << endl;
+    for (int i = 0; i <= i0; ++i) {
+      for (int j = 0; j <= i1; ++j) {
+        for (int k = 0; k <= i2; ++k) {
+          for (int l = 0; l <= i3; ++l) {
+            float s0 = seed[0] * pow(-1, i);
+            float s1 = seed[1] * pow(-1, j);
+            float s2 = seed[2] * pow(-1, k);
+            float s3 = seed[3] * pow(-1, l);
 
-    for (int i = 0; i < i0; ++i) {
-      for (int j = 0; j < i1; ++j) {
-        for (int k = 0; k < i2; ++k) {
-          for (int l = 0; l < i3; ++l) {
-            if (even) 
-              if((i + j + k + l) % 2 != 0) continue;
-            cout << i << ", " << j << ", " << k << ", " << l << endl;
-            r4Vert[index++] = Vec4f(seed[0] * pow(-1, i),
-                                    seed[1] * pow(-1, j),
-                                    seed[2] * pow(-1, k),
-                                    seed[3] * pow(-1, l));
+            r4Vert[index++] = Vec4f(s0, s1, s2, s3);
+            r4Vert[index++] = Vec4f(s0, s3, s1, s2);
+            r4Vert[index++] = Vec4f(s0, s2, s3, s1);
+            r4Vert[index++] = Vec4f(s1, s0, s3, s2);
+            r4Vert[index++] = Vec4f(s1, s3, s2, s0);
+            r4Vert[index++] = Vec4f(s1, s2, s0, s3);
+            r4Vert[index++] = Vec4f(s2, s0, s1, s3);
+            r4Vert[index++] = Vec4f(s2, s3, s0, s1);
+            r4Vert[index++] = Vec4f(s2, s1, s3, s0);
+            r4Vert[index++] = Vec4f(s3, s0, s2, s1);
+            r4Vert[index++] = Vec4f(s3, s2, s1, s0);
+            r4Vert[index++] = Vec4f(s3, s1, s0, s2);
+
+            if (!even) {
+              r4Vert[index++] = Vec4f(s0, s1, s3, s2);
+              r4Vert[index++] = Vec4f(s0, s3, s2, s1);
+              r4Vert[index++] = Vec4f(s0, s2, s1, s3);
+              r4Vert[index++] = Vec4f(s1, s0, s2, s3);
+              r4Vert[index++] = Vec4f(s1, s3, s0, s2);
+              r4Vert[index++] = Vec4f(s1, s2, s3, s0);
+              r4Vert[index++] = Vec4f(s2, s0, s3, s1);
+              r4Vert[index++] = Vec4f(s2, s3, s1, s0);
+              r4Vert[index++] = Vec4f(s2, s1, s0, s3);
+              r4Vert[index++] = Vec4f(s3, s0, s1, s2);
+              r4Vert[index++] = Vec4f(s3, s2, s0, s1);
+              r4Vert[index++] = Vec4f(s3, s1, s2, s0);
+            }
           }
         }
       }
@@ -138,11 +160,15 @@ struct HyperApp : OmniApp {
     addPermutation(Vec4f(0, pow(gold, -1), gold, sqrt(5)), vNum, true);
     addPermutation(Vec4f(pow(gold, -1), 1, gold, 2), vNum, true);
 
-    cout << vNum << endl;
+    cout << "vNum = " << vNum << endl;
+
+    cout << r4Vert.size() << endl;
+
+    cout << r4Vert[2] << endl;
 
     int k = 0;
-    for (int i = 0; i < vertNum; ++i) {
-      for (int j = i + 1; j < vertNum; ++j) {
+    for (int i = 0; i < vNum; ++i) {
+      for (int j = i + 1; j < vNum; ++j) {
         Vec4f dist = (r4Vert[i] - r4Vert[j]) * 0.5f;
         if (dist.mag() == 1.f) {
           generateEdge(s3Edge[k], r4Vert[i], r4Vert[j]);

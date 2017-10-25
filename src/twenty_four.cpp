@@ -226,12 +226,12 @@ struct HyperApp : OmniApp {
   // KEYBOARD commands local
   virtual bool onKeyDown(const Keyboard& k){
     switch (k.key()) {
-      case 'g': theta -= 0.1f; camera = Mat4f(
+      case 'g': theta -= 0.005f; camera = Mat4f(
       cos(theta), -sin(theta), 0.f, 0.f,
       sin(theta), cos(theta), 0.f, 0.f,
       0.f, 0.f, cos(theta), -sin(theta),
       0.f, 0.f, sin(theta), cos(theta)); break;
-      case 't': theta += 0.1f; camera = Mat4f(
+      case 't': theta += 0.005f; camera = Mat4f(
       cos(theta), -sin(theta), 0.f, 0.f,
       sin(theta), cos(theta), 0.f, 0.f,
       0.f, 0.f, cos(theta), -sin(theta),
