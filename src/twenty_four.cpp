@@ -77,7 +77,7 @@ struct HyperApp : OmniApp {
     initWindow();
     initAudio();
 
-    lens().eyeSep(0.03).near(0.5); // set eyeSep to zero
+    lens().eyeSep(0.03).near(0.1); // set eyeSep to zero
 
     theta = 0.f;
     camera = Mat4f(
