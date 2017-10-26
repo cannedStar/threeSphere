@@ -84,15 +84,15 @@ struct HyperApp : OmniApp {
     initWindow();
     initAudio();
 
-    lens().eyeSep(0.03).near(0.2).far(200); // set eyeSep to zero
+    lens().eyeSep(0.03).near(0.15).far(200); // set eyeSep to zero
 
     theta = 0.f;
     phi = 0.f;
     camera = Mat4f(
-      cos(theta), 0.f, 0.f, -sin(theta),
-      0.f, cos(theta+phi), -sin(theta+phi), 0.f,
-      0.f, sin(theta+phi), cos(theta+phi), 0.f,
-      sin(theta), 0.f, 0.f, cos(theta));
+      cos(theta), -sin(theta), 0.f, 0.f,
+      sin(theta), cos(theta), 0.f, 0.f,
+      0.f, 0.f, cos(theta+phi), -sin(theta+phi),
+      0.f, 0.f, sin(theta+phi), cos(theta+phi));
 
     epsilon = 0.00f;
     eye = Mat4f(
@@ -180,10 +180,10 @@ struct HyperApp : OmniApp {
       }
 
       camera = Mat4f(
-        cos(theta), 0.f, 0.f, -sin(theta),
-        0.f, cos(theta+phi), -sin(theta+phi), 0.f,
-        0.f, sin(theta+phi), cos(theta+phi), 0.f,
-        sin(theta), 0.f, 0.f, cos(theta));
+        cos(theta), -sin(theta), 0.f, 0.f,
+        sin(theta), cos(theta), 0.f, 0.f,
+        0.f, 0.f, cos(theta+phi), -sin(theta+phi),
+        0.f, 0.f, sin(theta+phi), cos(theta+phi));
 
       eye = Mat4f(
         cos(epsilon), 0.f, 0.f, -sin(epsilon),
