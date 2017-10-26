@@ -181,9 +181,9 @@ struct HyperApp : OmniApp {
 
       camera = Mat4f(
         cos(theta), 0.f, 0.f, -sin(theta),
-        0.f, cos(theta+phi), 0.f, -sin(theta+phi),
+        0.f, cos(theta+phi), -sin(theta+phi), 0.f,
         sin(theta), 0.f, 0.f, cos(theta),
-        0.f, sin(theta+phi), 0.f, cos(theta+phi));
+        0.f, sin(theta+phi), cos(theta+phi), 0.f);
 
       eye = Mat4f(
         cos(epsilon), 0.f, 0.f, -sin(epsilon),
