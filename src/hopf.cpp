@@ -84,7 +84,7 @@ struct HyperApp : OmniApp {
     initWindow();
     initAudio();
 
-    lens().eyeSep(0.03); // set eyeSep to zero
+    lens().eyeSep(0.03).near(0.2).far(200); // set eyeSep to zero
 
     theta = 0.f;
     phi = 0.f;
@@ -170,10 +170,10 @@ struct HyperApp : OmniApp {
       m >> i; 
       printf("OSC /as_key %d\n", i);
       switch(i) {
-        case 'g': theta -= 0.05f; break;
-        case 't': theta += 0.05f; break;
-        case 'h': phi -= 0.05f; break;
-        case 'y': phi += 0.05f; break;
+        case 'g': theta -= 0.005f; break;
+        case 't': theta += 0.005f; break;
+        case 'h': phi -= 0.00125f; break;
+        case 'y': phi += 0.00125f; break;
         case '[': epsilon -= 0.01f; break;
         case ']': epsilon += 0.01f; break;
         default: break;
