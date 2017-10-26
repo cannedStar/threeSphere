@@ -144,11 +144,12 @@ struct HyperApp : OmniApp {
     lens().eyeSep(0.03).near(0.2).far(200); // set eyeSep to zero
 
     theta = 0.f;
+    phi = 0.f;
     camera = Mat4f(
       cos(theta), -sin(theta), 0.f, 0.f,
       sin(theta), cos(theta), 0.f, 0.f,
-      0.f, 0.f, cos(theta), -sin(theta),
-      0.f, 0.f, sin(theta), cos(theta));
+      0.f, 0.f, cos(theta+phi), -sin(theta+phi),
+      0.f, 0.f, sin(theta+phi), cos(theta+phi));
 
     epsilon = 0.f;
     eye = Mat4f(
@@ -243,37 +244,25 @@ struct HyperApp : OmniApp {
     } else if (m.addressPattern() == "/as_key") {
       m >> i; 
       printf("OSC /as_key %d\n", i);
-      if (i == 'g') {
-        theta -= 0.005f; camera = Mat4f(
-        cos(theta), -sin(theta), 0.f, 0.f,
-        sin(theta), cos(theta), 0.f, 0.f,
-        0.f, 0.f, cos(theta), -sin(theta),
-        0.f, 0.f, sin(theta), cos(theta));
-      } else if (i == 't') {
-        theta += 0.005f; camera = Mat4f(
-        cos(theta), -sin(theta), 0.f, 0.f,
-        sin(theta), cos(theta), 0.f, 0.f,
-        0.f, 0.f, cos(theta), -sin(theta),
-        0.f, 0.f, sin(theta), cos(theta));
-      } else if (i == '[') {
-        epsilon -= 0.01f; eye = Mat4f(
-        cos(epsilon), 0.f, 0.f, -sin(epsilon),
-        0.f, 1.f, 0.f, 0.f,
-        0.f, 0.f, 1.f, 0.f,
-        sin(epsilon), 0.f, 0.f, cos(epsilon));
-      } else if (i == ']') {
-        epsilon += 0.01f; eye = Mat4f(
-        cos(epsilon), 0.f, 0.f, -sin(epsilon),
-        0.f, 1.f, 0.f, 0.f,
-        0.f, 0.f, 1.f, 0.f,
-        sin(epsilon), 0.f, 0.f, cos(epsilon));
-      } else if (i == '\\') {
-        epsilon = 0.f; eye = Mat4f(
-        cos(epsilon), 0.f, 0.f, -sin(epsilon),
-        0.f, 1.f, 0.f, 0.f,
-        0.f, 0.f, 1.f, 0.f,
-        sin(epsilon), 0.f, 0.f, cos(epsilon));
+      switch(i) {
+        case 'g': theta -= 0.005f; break;
+        case 't': theta += 0.005f; break;
+        case 'h': phi -= 0.005f; break;
+        case 'y': phi += 0.005f; break;
+        case '[': epsilon -= 0.01f; break;
+        case ']': epsilon += 0.01f; break;
+        default: break;
       }
+      camera = Mat4f(cos(theta), -sin(theta), 0.f, 0.f,
+                     sin(theta), cos(theta), 0.f, 0.f,
+                     0.f, 0.f, cos(theta+phi), -sin(theta+phi),
+                     0.f, 0.f, sin(theta+phi), cos(theta+phi));
+
+      eye = Mat4f(cos(epsilon), 0.f, 0.f, -sin(epsilon),
+                  0.f, 1.f, 0.f, 0.f,
+                  0.f, 0.f, 1.f, 0.f,
+                  sin(epsilon), 0.f, 0.f, cos(epsilon));
+
     } else { m.print(); } // as_key
   } // onMessage
   
