@@ -34,7 +34,7 @@ struct HyperApp : OmniApp {
     for (int i = 0; i < edgeRes; ++i) {
       float t = 2.f * M_PI * (float)i / ((float)edgeRes - 1.f);
 
-      float R_ = (float)v1;
+      float R_ = powf((float)v1, 0.25);
       float T_ = 2.f * M_PI * (float)v2 / (float)(vertNum - 1);
 
       Vec4f newPoint = Vec4f(
