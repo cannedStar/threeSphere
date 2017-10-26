@@ -13,7 +13,7 @@ using namespace al;
 using namespace std;
 
 static const int vertNum = 1633;
-static const int edgeNum = 200;
+static const int edgeNum = 2400;
 static const int edgeRes = 128;
 
 struct HyperApp : OmniApp {
@@ -65,6 +65,8 @@ struct HyperApp : OmniApp {
   }
 
   void addPermutation(Vec4f seed, int& index, bool even) {
+    std::vector<Vec4f> temp;
+
     int i0 = (seed[0] != 0)? 1 : 0;
     int i1 = (seed[1] != 0)? 1 : 0;
     int i2 = (seed[2] != 0)? 1 : 0;
@@ -79,36 +81,50 @@ struct HyperApp : OmniApp {
             float s2 = seed[2] * pow(-1, k);
             float s3 = seed[3] * pow(-1, l);
 
-            r4Vert[index++] = Vec4f(s0, s1, s2, s3);
-            r4Vert[index++] = Vec4f(s0, s3, s1, s2);
-            r4Vert[index++] = Vec4f(s0, s2, s3, s1);
-            r4Vert[index++] = Vec4f(s1, s0, s3, s2);
-            r4Vert[index++] = Vec4f(s1, s3, s2, s0);
-            r4Vert[index++] = Vec4f(s1, s2, s0, s3);
-            r4Vert[index++] = Vec4f(s2, s0, s1, s3);
-            r4Vert[index++] = Vec4f(s2, s3, s0, s1);
-            r4Vert[index++] = Vec4f(s2, s1, s3, s0);
-            r4Vert[index++] = Vec4f(s3, s0, s2, s1);
-            r4Vert[index++] = Vec4f(s3, s2, s1, s0);
-            r4Vert[index++] = Vec4f(s3, s1, s0, s2);
+            temp.push_back(Vec4f(s0, s1, s2, s3));
+            temp.push_back(Vec4f(s0, s3, s1, s2));
+            temp.push_back(Vec4f(s0, s2, s3, s1));
+            temp.push_back(Vec4f(s1, s0, s3, s2));
+            temp.push_back(Vec4f(s1, s3, s2, s0));
+            temp.push_back(Vec4f(s1, s2, s0, s3));
+            temp.push_back(Vec4f(s2, s0, s1, s3));
+            temp.push_back(Vec4f(s2, s3, s0, s1));
+            temp.push_back(Vec4f(s2, s1, s3, s0));
+            temp.push_back(Vec4f(s3, s0, s2, s1));
+            temp.push_back(Vec4f(s3, s2, s1, s0));
+            temp.push_back(Vec4f(s3, s1, s0, s2));
 
             if (!even) {
-              r4Vert[index++] = Vec4f(s0, s1, s3, s2);
-              r4Vert[index++] = Vec4f(s0, s3, s2, s1);
-              r4Vert[index++] = Vec4f(s0, s2, s1, s3);
-              r4Vert[index++] = Vec4f(s1, s0, s2, s3);
-              r4Vert[index++] = Vec4f(s1, s3, s0, s2);
-              r4Vert[index++] = Vec4f(s1, s2, s3, s0);
-              r4Vert[index++] = Vec4f(s2, s0, s3, s1);
-              r4Vert[index++] = Vec4f(s2, s3, s1, s0);
-              r4Vert[index++] = Vec4f(s2, s1, s0, s3);
-              r4Vert[index++] = Vec4f(s3, s0, s1, s2);
-              r4Vert[index++] = Vec4f(s3, s2, s0, s1);
-              r4Vert[index++] = Vec4f(s3, s1, s2, s0);
+              temp.push_back(Vec4f(s0, s1, s3, s2));
+              temp.push_back(Vec4f(s0, s3, s2, s1));
+              temp.push_back(Vec4f(s0, s2, s1, s3));
+              temp.push_back(Vec4f(s1, s0, s2, s3));
+              temp.push_back(Vec4f(s1, s3, s0, s2));
+              temp.push_back(Vec4f(s1, s2, s3, s0));
+              temp.push_back(Vec4f(s2, s0, s3, s1));
+              temp.push_back(Vec4f(s2, s3, s1, s0));
+              temp.push_back(Vec4f(s2, s1, s0, s3));
+              temp.push_back(Vec4f(s3, s0, s1, s2));
+              temp.push_back(Vec4f(s3, s2, s0, s1));
+              temp.push_back(Vec4f(s3, s1, s2, s0));
             }
           }
         }
       }
+    }
+
+    for (auto it = temp.begin(); it != temp.end(); ++it) {
+      for (auto it2 = std::next(it); it2 != temp.end(); ) {
+        if (*it2 == *it) {
+          it2 = temp.erase(it2);
+        }
+        else ++it2;
+      }
+    }
+    cout << temp.size() << endl;
+
+    for (auto &i : temp) {
+      r4Vert[index++] = i;
     }
   }
 
@@ -125,7 +141,7 @@ struct HyperApp : OmniApp {
     initWindow();
     initAudio();
 
-    lens().eyeSep(0.03); // set eyeSep to zero
+    lens().eyeSep(0.03).near(0.1).far(100); // set eyeSep to zero
 
     theta = 0.f;
     camera = Mat4f(
@@ -162,32 +178,28 @@ struct HyperApp : OmniApp {
 
     cout << "vNum = " << vNum << endl;
 
-    cout << r4Vert.size() << endl;
-
-    cout << r4Vert[2] << endl;
-
     int k = 0;
     for (int i = 0; i < vNum; ++i) {
       for (int j = i + 1; j < vNum; ++j) {
-        Vec4f dist = (r4Vert[i] - r4Vert[j]) * 0.5f;
-        if (dist.mag() == 1.f) {
+        Vec4f dist = (r4Vert[i] - r4Vert[j]);
+        if (dist.mag() < 0.8f) {
           generateEdge(s3Edge[k], r4Vert[i], r4Vert[j]);
           k++;
         }
       }
     }
 
-    cout << vertNum << " vertices -> " << k << " edges" << endl;
+    cout << vNum << " vertices -> " << k << " edges" << endl;
     if (k != edgeNum) {
       cout << "Error: Predefined Edge Number didn't match generated Edge Number!" << endl;
     }
 
-    leftMesh.resize(edgeNum);
-    rightMesh.resize(edgeNum);
+    leftMesh.resize(k);
+    rightMesh.resize(k);
 
-    for(int i = 0; i < edgeNum; ++i) {
-      generateMesh(leftMesh[i], s3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f), false);
-      generateMesh(rightMesh[i], s3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f), true);
+    for(int i = 0; i < k; ++i) {
+      generateMesh(leftMesh[i], s3Edge[i], HSV((float)i / (float)k, 1.f, 1.f), false);
+      generateMesh(rightMesh[i], s3Edge[i], HSV((float)i / (float)k, 1.f, 1.f), true);
     }
   } // HyperApp()
   
@@ -209,9 +221,9 @@ struct HyperApp : OmniApp {
       g.pointSize(6);
       g.lineWidth(5);
       
-      for(int i = 0; i < edgeNum; ++i) {
-        generateMesh(leftMesh[i], s3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f), false);
-        generateMesh(rightMesh[i], s3Edge[i], HSV((float)i / (float)edgeNum, 1.f, 1.f), true);
+      for(int i = 0; i < leftMesh.size(); ++i) {
+        generateMesh(leftMesh[i], s3Edge[i], HSV((float)i / (float)leftMesh.size(), 1.f, 1.f), false);
+        generateMesh(rightMesh[i], s3Edge[i], HSV((float)i / (float)leftMesh.size(), 1.f, 1.f), true);
         
         if (omni().currentEye() == 0) g.draw(leftMesh[i]);
         else g.draw(rightMesh[i]);
@@ -236,13 +248,13 @@ struct HyperApp : OmniApp {
       m >> i; 
       printf("OSC /as_key %d\n", i);
       if (i == 'g') {
-        theta -= 0.1f; camera = Mat4f(
+        theta -= 0.005f; camera = Mat4f(
         cos(theta), -sin(theta), 0.f, 0.f,
         sin(theta), cos(theta), 0.f, 0.f,
         0.f, 0.f, cos(theta), -sin(theta),
         0.f, 0.f, sin(theta), cos(theta));
       } else if (i == 't') {
-        theta += 0.1f; camera = Mat4f(
+        theta += 0.005f; camera = Mat4f(
         cos(theta), -sin(theta), 0.f, 0.f,
         sin(theta), cos(theta), 0.f, 0.f,
         0.f, 0.f, cos(theta), -sin(theta),
