@@ -14,7 +14,7 @@ using namespace std;
 
 static const int vertNum = 1633;
 static const int edgeNum = 2400;
-static const int edgeRes = 2;
+static const int edgeRes = 128;
 
 struct HyperApp : OmniApp {
 
@@ -141,7 +141,7 @@ struct HyperApp : OmniApp {
     initWindow();
     initAudio();
 
-    lens().eyeSep(0.03).near(0.1).far(100); // set eyeSep to zero
+    lens().eyeSep(0.03).near(0.13).far(200); // set eyeSep to zero
 
     theta = 0.f;
     camera = Mat4f(
@@ -168,13 +168,9 @@ struct HyperApp : OmniApp {
 
     float gold = (1.f + sqrt(5)) / 2.f;
 
-    addPermutation(Vec4f(0, 0, 2, 2), vNum, false);
-    addPermutation(Vec4f(1, 1, 1, sqrt(5)), vNum, false);
-    addPermutation(Vec4f(pow(gold, -2), gold, gold, gold), vNum, false);
-    addPermutation(Vec4f(pow(gold, -1), pow(gold, -1), pow(gold, -1), pow(gold, 2)), vNum, false);
-    addPermutation(Vec4f(0, pow(gold, -2), 1, pow(gold, 2)), vNum, true);
-    addPermutation(Vec4f(0, pow(gold, -1), gold, sqrt(5)), vNum, true);
-    addPermutation(Vec4f(pow(gold, -1), 1, gold, 2), vNum, true);
+    addPermutation(Vec4f(0.5, 0.5, 0.5, 0.5), vNum, false);
+    addPermutation(Vec4f(0, 0, 0, 1), vNum, false);
+    addPermutation(Vec4f(0.5 * gold, 0.5, 0.5 * pow(gold, -1), 0), vNum, true);
 
     cout << "vNum = " << vNum << endl;
 
@@ -248,13 +244,13 @@ struct HyperApp : OmniApp {
       m >> i; 
       printf("OSC /as_key %d\n", i);
       if (i == 'g') {
-        theta -= 0.005f; camera = Mat4f(
+        theta -= 0.1f; camera = Mat4f(
         cos(theta), -sin(theta), 0.f, 0.f,
         sin(theta), cos(theta), 0.f, 0.f,
         0.f, 0.f, cos(theta), -sin(theta),
         0.f, 0.f, sin(theta), cos(theta));
       } else if (i == 't') {
-        theta += 0.005f; camera = Mat4f(
+        theta += 0.1f; camera = Mat4f(
         cos(theta), -sin(theta), 0.f, 0.f,
         sin(theta), cos(theta), 0.f, 0.f,
         0.f, 0.f, cos(theta), -sin(theta),
