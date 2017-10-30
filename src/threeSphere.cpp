@@ -64,8 +64,8 @@ struct HyperApp : OmniApp {
 
     poly.generateMesh(camera, eye);
 
-    // poly2.init();
-    // poly2.setHypercube();
+    poly2.init();
+    poly2.setHypercube();
   } // HyperApp()
   
   virtual ~HyperApp() {}    // what does this do?
