@@ -122,9 +122,9 @@ struct Poly {
       HSV meshColor;
       
       if (showDual == 1)
-        meshColor = HSV(0.4f, 0.5f, 0.8f);
+        meshColor = HSV(0.6f, 0.7f, 0.8f);
       else if (showDual == 2)
-        meshColor = HSV(0.1f, 0.8f, 1.f);
+        meshColor = HSV(0.15f, 0.8f, 1.f);
       else
         meshColor = HSV((float) i / (float)edgeMesh[0].size(), 1.f, 1.f);
       
