@@ -14,7 +14,7 @@ using namespace std;
 
 static const int vertNum = 32;
 static const int edgeNum = 496;
-static const int edgeRes = 256;
+static const int edgeRes = 512;
 
 struct HyperApp : OmniApp {
 
