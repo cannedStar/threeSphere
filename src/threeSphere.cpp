@@ -124,6 +124,7 @@ struct HyperApp : OmniApp {
         case 'y': phi += 0.005f; break;
         case '[': epsilon -= 0.01f; break;
         case ']': epsilon += 0.01f; break;
+        case '\\': epsilon = 0.f; break;
         case '1': poly.setHypercube(); break;
         case '2': poly.set16(); break;
         case '3': poly.set24(); break;
@@ -156,6 +157,7 @@ struct HyperApp : OmniApp {
       case 'y': phi += 0.1f; break;
       case '[': epsilon -= 0.01f; break;
       case ']': epsilon += 0.01f; break;
+      case '\\': epsilon = 0.f; break;
 
       // case '1': omni().mode(OmniStereo::DUAL).stereo(true); break;
       // case '2': omni().mode(OmniStereo::ANAGLYPH).stereo(true); break;
