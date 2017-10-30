@@ -110,7 +110,7 @@ struct Poly {
     }
   }
 
-  void generateMesh(const Mat4f& camera, const Mat4f& eye) {
+  void generateMesh(const Mat4f& camera, const Mat4f& eye, int showDual = 0) {
     // vertMesh[0].clear();
     // vertMesh[1].clear();
     if (edgeMesh[0].size() != edges.size() / edgeRes) {
@@ -119,7 +119,14 @@ struct Poly {
     }
 
     for (int i = 0; i < edgeMesh[0].size(); ++i) {
-      HSV meshColor = HSV((float) i / (float)edgeMesh[0].size(), 1.f, 1.f);
+      HSV meshColor;
+      
+      if (showDual == 1)
+        meshColor = HSV(0.f, 1.f, 1.f);
+      else if (showDual == 2)
+        meshColor = HSV(0.5f, 1.f, 1.f);
+      else
+        meshColor = HSV((float) i / (float)edgeMesh[0].size(), 1.f, 1.f);
       
       edgeMesh[0][i].reset();
       edgeMesh[0][i].primitive(Graphics::LINE_STRIP);
@@ -143,9 +150,9 @@ struct Poly {
           right4D[3] / (1.f - right4D[0])
           );
 
-        edgeMesh[0][i].vertex(left4D);
+        edgeMesh[0][i].vertex(left3D);
         edgeMesh[0][i].color(meshColor);
-        edgeMesh[1][i].vertex(right4D);
+        edgeMesh[1][i].vertex(right3D);
         edgeMesh[1][i].color(meshColor);
       }
 
@@ -250,6 +257,12 @@ struct Poly {
     }
     
     cout << "600-cell: " << verts.size() << " vertices -> " << edges.size() / edgeRes << " edges" << endl;
+  }
+
+  void draw(Graphics& g, int eye) {
+    for (int i = 0; i < edgeMesh[eye].size(); ++i) {
+      g.draw(edgeMesh[eye][i]);
+    }
   }
 
 };

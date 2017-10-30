@@ -22,7 +22,9 @@ struct HyperApp : OmniApp {
 
   float theta, phi, epsilon;
 
-  Poly poly;
+  Poly poly, poly2;
+
+  bool showDual;
 
   Mat4f camera;
   Mat4f eye;
@@ -43,11 +45,13 @@ struct HyperApp : OmniApp {
     phi = 0.f;
     epsilon = 0.f;
 
+    showDual = false;
+
     camera = Mat4f(
       cos(theta), -sin(theta), 0.f, 0.f,
       sin(theta), cos(theta), 0.f, 0.f,
-      0.f, 0.f, cos(theta), -sin(theta),
-      0.f, 0.f, sin(theta), cos(theta));
+      0.f, 0.f, cos(theta+phi), -sin(theta+phi),
+      0.f, 0.f, sin(theta+phi), cos(theta+phi));
 
     eye = Mat4f(
       cos(epsilon), 0.f, 0.f, -sin(epsilon),
@@ -56,10 +60,12 @@ struct HyperApp : OmniApp {
       sin(epsilon), 0.f, 0.f, cos(epsilon));
 
     poly.init();
-
-    poly.set120();
+    poly.setHypercube();
 
     poly.generateMesh(camera, eye);
+
+    // poly2.init();
+    // poly2.setHypercube();
   } // HyperApp()
   
   virtual ~HyperApp() {}    // what does this do?
@@ -82,14 +88,14 @@ struct HyperApp : OmniApp {
       g.pointSize(6);
       g.lineWidth(5);
       
-      poly.generateMesh(camera, eye);
-
-      if(omni().currentEye() == 0) {
-        for(int i = 0; i < poly.edgeMesh[0].size(); ++i)
-          g.draw(poly.edgeMesh[0][i]);
+      if(!showDual) {
+        poly.generateMesh(camera, eye);
+        poly.draw(g, omni().currentEye());
       } else {
-        for(int i = 0; i < poly.edgeMesh[1].size(); ++i)
-          g.draw(poly.edgeMesh[1][i]);
+        poly.generateMesh(camera, eye, 1);
+        poly2.generateMesh(camera, eye, 2);
+        poly.draw(g, omni().currentEye());
+        poly2.draw(g, omni().currentEye());
       }
     g.popMatrix();
   } // onDraw
@@ -122,6 +128,7 @@ struct HyperApp : OmniApp {
         case '3': poly.set24(); break;
         case '4': poly.set120(); break;
         case '5': poly.set600(); break;
+        case '0': showDual = !showDual; break;
         default: break;
       }
       camera = Mat4f(cos(theta), -sin(theta), 0.f, 0.f,
@@ -153,6 +160,7 @@ struct HyperApp : OmniApp {
       case '3': poly.set24(); break;
       case '4': poly.set120(); break;
       case '5': poly.set600(); break;
+      case '0': showDual = !showDual; break;
       default: break;
     }
 
