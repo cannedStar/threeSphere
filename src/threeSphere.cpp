@@ -128,7 +128,10 @@ struct HyperApp : OmniApp {
         case '3': poly.set24(); break;
         case '4': poly.set120(); break;
         case '5': poly.set600(); break;
+        case '6': poly.set5(); break;
         case '0': showDual = !showDual; break;
+        case '-': poly2.setHypercube(); break;
+        case '=': poly2.set600(); break;
         default: break;
       }
       camera = Mat4f(cos(theta), -sin(theta), 0.f, 0.f,
@@ -160,7 +163,10 @@ struct HyperApp : OmniApp {
       case '3': poly.set24(); break;
       case '4': poly.set120(); break;
       case '5': poly.set600(); break;
+      case '6': poly.set5(); break;
       case '0': showDual = !showDual; break;
+      case '-': poly2.setHypercube(); break;
+      case '=': poly2.set600(); break;
       default: break;
     }
 

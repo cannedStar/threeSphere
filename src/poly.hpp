@@ -178,6 +178,27 @@ struct Poly {
     cout << "Hypercube: " << verts.size() << " vertices -> " << edges.size() / edgeRes << " edges" << endl;
   }
 
+  void set5() {
+    clear();
+
+    verts.push_back(Vec4f(1/sqrt(10), 1/sqrt(6), 1/sqrt(3), 1));
+    verts.push_back(Vec4f(1/sqrt(10), 1/sqrt(6), 1/sqrt(3), -1));
+    verts.push_back(Vec4f(1/sqrt(10), 1/sqrt(6), -2/sqrt(3), 0));
+    verts.push_back(Vec4f(1/sqrt(10), -sqrt(3/2), 0, 0));
+    verts.push_back(Vec4f(-2*sqrt(2/5), 0, 0, 0));
+
+    for (int i = 0; i < verts.size(); ++i) {
+      for (int j = i + 1; j < verts.size(); ++j) {
+        Vec4f dist = (verts[i] - verts[j]);
+        if (dist.mag() < 2.1f) {
+          generateEdge(verts[i], verts[j]);
+        }
+      }
+    }
+    
+    cout << "5-cell: " << verts.size() << " vertices -> " << edges.size() / edgeRes << " edges" << endl;
+  }
+
   void set16() {
     clear();
 
