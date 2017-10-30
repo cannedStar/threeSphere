@@ -60,12 +60,13 @@ struct HyperApp : OmniApp {
       sin(epsilon), 0.f, 0.f, cos(epsilon));
 
     poly.init();
-    poly.setHypercube();
+    poly.set16();
 
     poly.generateMesh(camera, eye);
 
     poly2.init();
     poly2.setHypercube();
+    poly2.generateMesh(camera, eye);
   } // HyperApp()
   
   virtual ~HyperApp() {}    // what does this do?
