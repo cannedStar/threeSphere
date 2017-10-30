@@ -46,7 +46,7 @@ struct HyperApp : OmniApp {
 
     for (int d = 0; d < depth; ++d) {
       int formerSize = currentSize;
-      currentSize = h3Vert.size();
+      currentSize = h3Edge.size();
       // cout << "current depth = " << d << endl;
       // cout << " current size = " << currentSize << endl;
 
