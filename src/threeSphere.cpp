@@ -11,6 +11,7 @@ Kenny Kim
 #include <iostream>
 
 #include "poly.hpp"
+#include "hopf.hpp"
 
 using namespace al;
 using namespace std;
@@ -23,8 +24,9 @@ struct HyperApp : OmniApp {
   float theta, phi, epsilon;
 
   Poly poly, poly2;
+  Hopf hopf;
 
-  bool showDual;
+  int showState; // 0 poly 1 dual 2 hopf
 
   Mat4f camera;
   Mat4f eye;
@@ -45,7 +47,7 @@ struct HyperApp : OmniApp {
     phi = 0.f;
     epsilon = 0.f;
 
-    showDual = false;
+    showState = 0;
 
     camera = Mat4f(
       cos(theta), -sin(theta), 0.f, 0.f,
@@ -62,11 +64,15 @@ struct HyperApp : OmniApp {
     poly.init();
     poly.set16();
 
-    poly.generateMesh(camera, eye);
+    poly.generateMesh(camera, eye, 0);
 
     poly2.init();
     poly2.setHypercube();
-    poly2.generateMesh(camera, eye);
+    poly2.generateMesh(camera, eye, 2);
+
+    hopf.init();
+    hopf.setHopf(32, 32, 1.f, 1.f);
+    hopf.generateMesh(camera, eye);
   } // HyperApp()
   
   virtual ~HyperApp() {}    // what does this do?
@@ -74,7 +80,15 @@ struct HyperApp : OmniApp {
   // add in rotation functions
 
   // ANIMATE
-  virtual void onAnimate(double dt) {   
+  virtual void onAnimate(double dt) {
+    if(showState == 0) {
+      if(poly.dirty && !poly.busy) poly.generateMeshT(camera, eye, 0);
+    } else if (showState == 1) {
+      if(poly.dirty && !poly.busy) poly.generateMeshT(camera, eye, 1);
+      if(poly2.dirty && !poly2.busy) poly2.generateMeshT(camera, eye, 2);
+    } else if (showState == 2) {
+      if(hopf.dirty && !hopf.busy) hopf.generateMeshT(camera, eye);
+    }
   }
     
   // DRAW 
@@ -89,17 +103,38 @@ struct HyperApp : OmniApp {
       g.pointSize(6);
       g.lineWidth(5);
       
-      if(!showDual) {
-        poly.generateMesh(camera, eye);
-        poly.draw(g, omni().currentEye());
-      } else {
-        poly.generateMesh(camera, eye, 1);
-        poly2.generateMesh(camera, eye, 2);
+      if(showState == 0) poly.draw(g, omni().currentEye());
+      else if(showState == 1) {
         poly.draw(g, omni().currentEye());
         poly2.draw(g, omni().currentEye());
+      } else if(showState == 2) {
+        hopf.draw(g, omni().currentEye());
       }
     g.popMatrix();
   } // onDraw
+
+  void update() {
+    if (showState == 2) {
+      camera = Mat4f(cos(theta), 0.f, 0.f, -sin(theta),
+                     0.f, cos(theta+phi), -sin(theta+phi), 0.f,
+                     0.f, sin(theta+phi), cos(theta+phi), 0.f,
+                     sin(theta), 0.f, 0.f, cos(theta));
+    } else {
+      camera = Mat4f(cos(theta), -sin(theta), 0.f, 0.f,
+                     sin(theta), cos(theta), 0.f, 0.f,
+                     0.f, 0.f, cos(theta+phi), -sin(theta+phi),
+                     0.f, 0.f, sin(theta+phi), cos(theta+phi));
+    }
+
+    eye = Mat4f(cos(epsilon), 0.f, 0.f, -sin(epsilon),
+                0.f, 1.f, 0.f, 0.f,
+                0.f, 0.f, 1.f, 0.f,
+                sin(epsilon), 0.f, 0.f, cos(epsilon));
+
+    poly.dirty = true;
+    poly2.dirty = true;
+    hopf.dirty = true;
+  }
   
   // MESSAGE FROM MAX
   virtual void onMessage(osc::Message& m) {
@@ -118,71 +153,55 @@ struct HyperApp : OmniApp {
       m >> i; 
       printf("OSC /as_key %d\n", i);
       switch(i) {
-        case 'g': theta -= 0.005f; break;
-        case 't': theta += 0.005f; break;
-        case 'h': phi -= 0.005f; break;
-        case 'y': phi += 0.005f; break;
-        case '[': epsilon -= 0.01f; break;
-        case ']': epsilon += 0.01f; break;
-        case '\\': epsilon = 0.f; break;
-        case '1': poly.setHypercube(); break;
-        case '2': poly.set16(); break;
-        case '3': poly.set24(); break;
-        case '4': poly.set120(); break;
-        case '5': poly.set600(); break;
-        case '6': poly.set5(); break;
-        case '0': showDual = !showDual; break;
-        case '-': poly2.setHypercube(); break;
-        case '=': poly2.set600(); break;
+        case 'g': theta -= 0.005f; update(); break;
+        case 't': theta += 0.005f; update(); break;
+        case 'h': phi -= 0.005f; update(); break;
+        case 'y': phi += 0.005f; update(); break;
+        case '[': epsilon -= 0.01f; update(); break;
+        case ']': epsilon += 0.01f; update(); break;
+        case '\\': epsilon = 0.f; update(); break;
+        case '1': poly.setHypercube(); update(); break;
+        case '2': poly.set16(); update(); break;
+        case '3': poly.set24(); update(); break;
+        case '4': poly.set120(); update(); break;
+        case '5': poly.set600(); update(); break;
+        case '6': poly.set5(); update(); break;
+        case '8': showState = 0; update(); break;
+        case '9': showState = 1; poly2.setHypercube(); poly.set16(); update(); break;
+        case '0': showState = 1; poly2.set600(); poly.set120(); update(); break;
+        case '-': showState = 2; hopf.setHopf(32, 32, 1.f, 1.f); update(); break;
+        case '=': showState = 2; hopf.setHopf(32, 32, 2.f, 3.f); update(); break;
         default: break;
       }
-      camera = Mat4f(cos(theta), -sin(theta), 0.f, 0.f,
-                     sin(theta), cos(theta), 0.f, 0.f,
-                     0.f, 0.f, cos(theta+phi), -sin(theta+phi),
-                     0.f, 0.f, sin(theta+phi), cos(theta+phi));
-
-      eye = Mat4f(cos(epsilon), 0.f, 0.f, -sin(epsilon),
-                  0.f, 1.f, 0.f, 0.f,
-                  0.f, 0.f, 1.f, 0.f,
-                  sin(epsilon), 0.f, 0.f, cos(epsilon));
     } else { m.print(); } // as_key
   } // onMessage
   
   // KEYBOARD commands local
   virtual bool onKeyDown(const Keyboard& k){
     switch (k.key()) {
-      case 'g': theta -= 0.1f; break;
-      case 't': theta += 0.1f; break;
-      case 'h': phi -= 0.1f; break;
-      case 'y': phi += 0.1f; break;
-      case '[': epsilon -= 0.01f; break;
-      case ']': epsilon += 0.01f; break;
-      case '\\': epsilon = 0.f; break;
-
       // case '1': omni().mode(OmniStereo::DUAL).stereo(true); break;
       // case '2': omni().mode(OmniStereo::ANAGLYPH).stereo(true); break;
-      case '1': poly.setHypercube(); break;
-      case '2': poly.set16(); break;
-      case '3': poly.set24(); break;
-      case '4': poly.set120(); break;
-      case '5': poly.set600(); break;
-      case '6': poly.set5(); break;
-      case '0': showDual = !showDual; break;
-      case '-': poly2.setHypercube(); break;
-      case '=': poly2.set600(); break;
+
+      case 'g': theta -= 0.1f; update(); break;
+      case 't': theta += 0.1f; update(); break;
+      case 'h': phi -= 0.1f; update(); break;
+      case 'y': phi += 0.1f; update(); break;
+      case '[': epsilon -= 0.01f; update(); break;
+      case ']': epsilon += 0.01f; update(); break;
+      case '\\': epsilon = 0.f; update(); break;
+      case '1': poly.setHypercube(); update(); break;
+      case '2': poly.set16(); update(); break;
+      case '3': poly.set24(); update(); break;
+      case '4': poly.set120(); update(); break;
+      case '5': poly.set600(); update(); break;
+      case '6': poly.set5(); update(); break;
+      case '8': showState = 0; update(); break;
+      case '9': showState = 1; poly2.setHypercube(); poly.set16(); update(); break;
+      case '0': showState = 1; poly2.set600(); poly.set120(); update(); break;
+      case '-': showState = 2; hopf.setHopf(32, 32, 1.f, 1.f); update(); break;
+      case '=': showState = 2; hopf.setHopf(16, 16, 2.f, 3.f); update(); break;
       default: break;
     }
-
-    camera = Mat4f(cos(theta), -sin(theta), 0.f, 0.f,
-                   sin(theta), cos(theta), 0.f, 0.f,
-                   0.f, 0.f, cos(theta+phi), -sin(theta+phi),
-                   0.f, 0.f, sin(theta+phi), cos(theta+phi));
-
-    eye = Mat4f(cos(epsilon), 0.f, 0.f, -sin(epsilon),
-                0.f, 1.f, 0.f, 0.f,
-                0.f, 0.f, 1.f, 0.f,
-                sin(epsilon), 0.f, 0.f, cos(epsilon));
-
     return true;
   } // onKeyDown
   

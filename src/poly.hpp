@@ -3,6 +3,9 @@
 
 #include "allocore/al_Allocore.hpp"
 
+#include <thread>
+#include <atomic>
+
 using namespace al;
 using namespace std;
 
@@ -14,16 +17,23 @@ struct Poly {
 
   std::vector<Vec4f> verts;
   std::vector<Vec4f> edges;
-  std::vector<Mesh> vertMesh[2];
+  // std::vector<Mesh> vertMesh[2];
   std::vector<Mesh> edgeMesh[2];
+
+  atomic<bool> dirty { false };
+  atomic<bool> busy { false };
+
+  std::thread polyThread;
 
   void init(int er = 128) {
     edgeRes = er;
+    dirty = false;
+    busy = false;
 
     verts.reserve(maxVert);
     edges.reserve(maxEdge * edgeRes);
-    vertMesh[0].reserve(maxVert);
-    vertMesh[1].reserve(maxVert);
+    // vertMesh[0].reserve(maxVert);
+    // vertMesh[1].reserve(maxVert);
     edgeMesh[0].reserve(maxEdge);
     edgeMesh[1].reserve(maxEdge);
   }
@@ -31,8 +41,8 @@ struct Poly {
   void clear() {
     verts.clear();
     edges.clear();
-    vertMesh[0].clear();
-    vertMesh[1].clear();
+    // vertMesh[0].clear();
+    // vertMesh[1].clear();
     edgeMesh[0].clear();
     edgeMesh[1].clear();
   }
@@ -110,7 +120,7 @@ struct Poly {
     }
   }
 
-  void generateMesh(const Mat4f& camera, const Mat4f& eye, int showDual = 0) {
+  void generateMesh(const Mat4f& camera, const Mat4f& eye, int dualIdx) {
     // vertMesh[0].clear();
     // vertMesh[1].clear();
     if (edgeMesh[0].size() != edges.size() / edgeRes) {
@@ -121,9 +131,9 @@ struct Poly {
     for (int i = 0; i < edgeMesh[0].size(); ++i) {
       HSV meshColor;
       
-      if (showDual == 1)
+      if (dualIdx == 1)
         meshColor = HSV(0.6f, 0.7f, 0.8f);
-      else if (showDual == 2)
+      else if (dualIdx == 2)
         meshColor = HSV(0.15f, 0.8f, 1.f);
       else
         meshColor = HSV((float) i / (float)edgeMesh[0].size(), 1.f, 1.f);
@@ -159,6 +169,17 @@ struct Poly {
       // edgeMesh[0][i].generateNormals();
       // edgeMesh[1][i].generateNormals();
     }
+
+    dirty = false;
+    busy = false;
+  }
+
+  void generateMeshT(const Mat4f& camera, const Mat4f& eye, const int dualIdx) {
+    busy = true;
+    polyThread = std::thread([this, &camera, &eye, dualIdx]{
+      this->generateMesh(camera, eye, dualIdx);
+    });
+    polyThread.detach();
   }
 
   void setHypercube() {
