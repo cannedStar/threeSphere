@@ -223,7 +223,6 @@ struct HyperApp : OmniApp {
       case ';': b_hopf++; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
       case '/': b_hopf--; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
       default: break;
-      default: break;
     }
     return true;
   } // onKeyDown
