@@ -54,18 +54,18 @@ struct Hopf {
     }
   }
 
-  void setHopf(int xVert, int yVert, const float a, const float b) {
+  void setHopf(int xVert, int yVert, int a, int b) {
     clear();
 
     for (int i = 0; i < xVert; ++i) {
       for (int j = i + 1; j < yVert; ++j) {
         float r = powf((float)i / 5.f, 2);
         float t = 2.f * M_PI * (float)j / (float)(yVert - 1);
-        generateEdge(r, t, a, b);
+        generateEdge(r, t, (float)a, (float)b);
       }
     }
     
-    cout << "Hopf: (" << xVert << ", " << yVert << ") vertices -> " << edges.size() / edgeRes << " edges" << endl;
+    cout << "Hopf: (" << xVert << ", " << yVert << ", " << aVert << ", " << bVert << ") vertices -> " << edges.size() / edgeRes << " edges" << endl;
   }
 
   void generateMesh(const Mat4f& camera, const Mat4f& eye) {

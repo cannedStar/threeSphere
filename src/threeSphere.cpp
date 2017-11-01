@@ -22,6 +22,7 @@ struct HyperApp : OmniApp {
   Light light;
 
   float theta, phi, epsilon;
+  int x_hopf, y_hopf, a_hopf, b_hopf;
 
   Poly poly, poly2;
   Hopf hopf;
@@ -47,6 +48,11 @@ struct HyperApp : OmniApp {
     phi = 0.f;
     epsilon = 0.f;
 
+    x_hopf = 32;
+    y_hopf = 32;
+    a_hopf = 1;
+    b_hopf = 1;
+
     showState = 0;
 
     camera = Mat4f(
@@ -71,7 +77,7 @@ struct HyperApp : OmniApp {
     poly2.generateMesh(camera, eye, 2);
 
     hopf.init();
-    hopf.setHopf(32, 32, 1.f, 1.f);
+    hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf);
     hopf.generateMesh(camera, eye);
   } // HyperApp()
   
@@ -169,8 +175,16 @@ struct HyperApp : OmniApp {
         case '8': showState = 0; update(); break;
         case '9': showState = 1; poly2.setHypercube(); poly.set16(); update(); break;
         case '0': showState = 1; poly2.set600(); poly.set120(); update(); break;
-        case '-': showState = 2; hopf.setHopf(32, 32, 1.f, 1.f); update(); break;
-        case '=': showState = 2; hopf.setHopf(32, 32, 2.f, 3.f); update(); break;
+        case '-': showState = 2; a_hopf = 1; b_hopf = 1; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+        case '=': showState = 2; a_hopf = 2; b_hopf = 3; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+        case 'j': x_hopf++; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+        case 'm': x_hopf--; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+        case 'k': y_hopf++; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+        case ',': y_hopf--; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+        case 'l': a_hopf++; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+        case '.': a_hopf--; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+        case ';': b_hopf++; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+        case '/': b_hopf--; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
         default: break;
       }
     } else { m.print(); } // as_key
@@ -198,8 +212,16 @@ struct HyperApp : OmniApp {
       case '8': showState = 0; update(); break;
       case '9': showState = 1; poly2.setHypercube(); poly.set16(); update(); break;
       case '0': showState = 1; poly2.set600(); poly.set120(); update(); break;
-      case '-': showState = 2; hopf.setHopf(32, 32, 1.f, 1.f); update(); break;
-      case '=': showState = 2; hopf.setHopf(16, 16, 2.f, 3.f); update(); break;
+      case '-': showState = 2; a_hopf = 1; b_hopf = 1; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+      case '=': showState = 2; a_hopf = 2; b_hopf = 3; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+      case 'j': x_hopf++; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+      case 'm': x_hopf--; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+      case 'k': y_hopf++; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+      case ',': y_hopf--; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+      case 'l': a_hopf++; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+      case '.': a_hopf--; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+      case ';': b_hopf++; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
+      case '/': b_hopf--; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
       default: break;
     }
     return true;
