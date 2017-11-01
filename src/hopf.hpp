@@ -65,7 +65,7 @@ struct Hopf {
       }
     }
     
-    cout << "Hopf: (" << xVert << ", " << yVert << ", " << aVert << ", " << bVert << ") vertices -> " << edges.size() / edgeRes << " edges" << endl;
+    cout << "Hopf: (" << xVert << ", " << yVert << ", " << a << ", " << b << ") vertices -> " << edges.size() / edgeRes << " edges" << endl;
   }
 
   void generateMesh(const Mat4f& camera, const Mat4f& eye) {
