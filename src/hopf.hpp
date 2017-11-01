@@ -58,9 +58,9 @@ struct Hopf {
     clear();
 
     for (int i = 0; i < xVert; ++i) {
-      for (int j = i + 1; j < yVert; ++j) {
+      for (int j = 0; j < yVert; ++j) {
         float r = powf((float)i / 5.f, 2);
-        float t = 2.f * M_PI * (float)j / (float)(yVert - 1);
+        float t = 2.f * M_PI * (float)j / (float)yVert;
         generateEdge(r, t, (float)a, (float)b);
       }
     }
