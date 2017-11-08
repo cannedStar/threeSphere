@@ -17,11 +17,15 @@ struct Poly {
 
   std::vector<Vec4f> verts;
   std::vector<Vec4f> edges;
-  // std::vector<Mesh> vertMesh[2];
+  std::vector<Vec3f> vertMesh[2];
   std::vector<Mesh> edgeMesh[2];
+
+  Mesh sphere;
+  float sphereScale;
 
   atomic<bool> dirty { false };
   atomic<bool> busy { false };
+  atomic<bool> showSphere { true };
 
   std::thread polyThread;
 
@@ -29,20 +33,26 @@ struct Poly {
     edgeRes = er;
     dirty = false;
     busy = false;
+    showSphere = true;
 
     verts.reserve(maxVert);
     edges.reserve(maxEdge * edgeRes);
-    // vertMesh[0].reserve(maxVert);
-    // vertMesh[1].reserve(maxVert);
+    vertMesh[0].reserve(maxVert);
+    vertMesh[1].reserve(maxVert);
     edgeMesh[0].reserve(maxEdge);
     edgeMesh[1].reserve(maxEdge);
+    
+    sphere.color(HSV(0.f, 0.f, 0.7f));
+    addSphere(sphere, 0.01, 6, 6); // radius, slices, stacks
+    sphere.generateNormals();
+    sphereScale = 1.f;
   }
 
   void clear() {
     verts.clear();
     edges.clear();
-    // vertMesh[0].clear();
-    // vertMesh[1].clear();
+    vertMesh[0].clear();
+    vertMesh[1].clear();
     edgeMesh[0].clear();
     edgeMesh[1].clear();
   }
@@ -120,12 +130,20 @@ struct Poly {
     }
   }
 
+  Vec3f s4toR3(const Vec4f& src) {
+    return Vec3f(src[1] / (1.f - src[0]),
+                 src[2] / (1.f - src[0]),
+                 src[3] / (1.f - src[0]));
+  }
+
   void generateMesh(const Mat4f& camera, const Mat4f& eye, int dualIdx) {
     // vertMesh[0].clear();
     // vertMesh[1].clear();
     if (edgeMesh[0].size() != edges.size() / edgeRes) {
       edgeMesh[0].resize(edges.size() / edgeRes);
       edgeMesh[1].resize(edges.size() / edgeRes);
+      vertMesh[0].resize(verts.size());
+      vertMesh[1].resize(verts.size());
     }
 
     for (int i = 0; i < edgeMesh[0].size(); ++i) {
@@ -149,25 +167,29 @@ struct Poly {
         Mat4f::multiply(right4D, eye, left4D);
 
         // projection onto R3
-        Vec3f left3D = Vec3f(
-          left4D[1] / (1.f - left4D[0]),
-          left4D[2] / (1.f - left4D[0]),
-          left4D[3] / (1.f - left4D[0])
-          );
-        Vec3f right3D = Vec3f(
-          right4D[1] / (1.f - right4D[0]),
-          right4D[2] / (1.f - right4D[0]),
-          right4D[3] / (1.f - right4D[0])
-          );
+        Vec3f left3D = s4toR3(left4D);
+        Vec3f right3D = s4toR3(right4D);
 
         edgeMesh[0][i].vertex(left3D);
         edgeMesh[0][i].color(meshColor);
         edgeMesh[1][i].vertex(right3D);
         edgeMesh[1][i].color(meshColor);
       }
+    }
 
-      // edgeMesh[0][i].generateNormals();
-      // edgeMesh[1][i].generateNormals();
+    if (showSphere) {
+      for (int i = 0; i < vertMesh[0].size(); ++i) {      
+        // vertMesh[0][i].reset();
+        // vertMesh[1][i].reset();
+        
+        Vec4f left4D, right4D;
+        Mat4f::multiply(left4D, camera, verts[i].normalized());
+        Mat4f::multiply(right4D, eye, left4D);
+
+        // projection onto R3
+        vertMesh[0][i] = s4toR3(left4D);
+        vertMesh[1][i] = s4toR3(right4D);
+      }
     }
 
     dirty = false;
@@ -184,6 +206,7 @@ struct Poly {
 
   void setHypercube() {
     clear();
+    sphereScale = 1.f;
 
     addPermutation(Vec4f(1, 1, 1, 1), false);
 
@@ -201,6 +224,7 @@ struct Poly {
 
   void set5() {
     clear();
+    sphereScale = 1.f;
 
     verts.push_back(Vec4f(1/sqrt(10), 1/sqrt(6), 1/sqrt(3), 1));
     verts.push_back(Vec4f(1/sqrt(10), 1/sqrt(6), 1/sqrt(3), -1));
@@ -222,6 +246,7 @@ struct Poly {
 
   void set16() {
     clear();
+    sphereScale = 1.f;
 
     addPermutation(Vec4f(1, 0, 0, 0), false);
 
@@ -239,6 +264,7 @@ struct Poly {
 
   void set24() {
     clear();
+    sphereScale = 0.8f;
 
     addPermutation(Vec4f(1, 1, 1, 1), false);
     addPermutation(Vec4f(2, 0, 0, 0), false);
@@ -257,6 +283,7 @@ struct Poly {
 
   void set120() {
     clear();
+    sphereScale = 0.4f;
 
     float gold = (1.f + sqrt(5)) / 2.f;
 
@@ -282,6 +309,7 @@ struct Poly {
 
   void set600() {
     clear();
+    sphereScale = 0.6f;
 
     float gold = (1.f + sqrt(5)) / 2.f;
 
@@ -304,6 +332,16 @@ struct Poly {
   void draw(Graphics& g, int eye) {
     for (int i = 0; i < edgeMesh[eye].size(); ++i) {
       g.draw(edgeMesh[eye][i]);
+    }
+
+    if (showSphere) {
+      for (int i = 0; i < vertMesh[eye].size(); ++i) {
+        g.pushMatrix();
+          g.translate(vertMesh[eye][i]);
+          g.scale(sphereScale);
+          g.draw(sphere);
+        g.popMatrix();
+      }
     }
   }
 
