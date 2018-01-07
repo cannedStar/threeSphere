@@ -173,6 +173,8 @@ struct HyperApp : OmniApp {
         case '4': showState = 0; poly.set120(); update(); break;
         case '5': showState = 0; poly.set600(); update(); break;
         case '6': showState = 0; poly.set5(); update(); break;
+        case '7': showState = 0; poly.set5(); update(); break;
+        case '8': showState = 0; poly.set5(); update(); break;
         case '9': showState = 1; poly2.setHypercube(); poly.set16(); update(); break;
         case '0': showState = 1; poly2.set600(); poly.set120(); update(); break;
         case '-': showState = 2; a_hopf = 1; b_hopf = 1; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
@@ -210,6 +212,8 @@ struct HyperApp : OmniApp {
       case '4': showState = 0; poly.set120(); update(); break;
       case '5': showState = 0; poly.set600(); update(); break;
       case '6': showState = 0; poly.set5(); update(); break;
+      case '7': showState = 1; poly2.setHypercube(); poly.set5(); update(); break;
+      case '8': showState = 1; poly2.set16(); poly.set5(); update(); break;
       case '9': showState = 1; poly2.setHypercube(); poly.set16(); update(); break;
       case '0': showState = 1; poly2.set600(); poly.set120(); update(); break;
       case '-': showState = 2; a_hopf = 1; b_hopf = 1; hopf.setHopf(x_hopf, y_hopf, a_hopf, b_hopf); update(); break;
