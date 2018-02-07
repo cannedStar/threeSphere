@@ -8,6 +8,7 @@
 
 #include "al_OmniApp.hpp"
 #include "allocore/io/al_App.hpp"
+#include "allocore/graphics/al_Asset.hpp"
 #include <iostream>
 #include <set>
 
@@ -16,14 +17,27 @@ using namespace std;
 
 static const int edgeRes = 2;
 
+struct Edge {
+  Vec4f left;
+  Vec4f right;
+};
+
 struct HyperApp : OmniApp {
 
   Material material;
   Light light;
 
-  std::vector<Vec4f> h3Vert;
-  std::vector<Vec2i> h3Edge;
+  std::vector<Edge> h3Edge;
   std::vector<Mesh> leftMesh, rightMesh;
+
+  std::vector<Vec4f> cubeVerts;
+
+  Texture tex;
+  Scene* ascene = 0;
+  Vec3f scene_min, scene_max, scene_center;
+  DisplayList scene_list;
+
+  Mesh cube, ducky;
 
   float theta, epsilon, phi;
   float eyeAngle;
@@ -34,28 +48,43 @@ struct HyperApp : OmniApp {
   Vec4f seed = Vec4f(1, 0, 0, 0);
   int depth = 2;
 
+  float cubeLen = 0.5;
+
+  bool initDraw = true;
+
   //RTR^-1
   // z axis
 
   void generateEdge(std::vector<Mat4f>& gen, Vec4f& seed, int depth) {
-    h3Vert.clear();
     h3Edge.clear();
 
-    h3Vert.push_back(seed);
     int currentSize = 0;
 
-    for (int d = 0; d < depth; ++d) {
+    if (depth > 0) {
+      Edge newEdge;
+      newEdge.left = seed;
+      for (int i = 0; i < gen.size(); ++i) {
+        Mat4f::multiply(newEdge.right, gen[i], seed);
+        cout << newEdge.left << endl;
+        cout << newEdge.right << endl;
+        h3Edge.push_back(newEdge);
+      }
+    }
+
+    for (int d = 1; d < depth; ++d) {
       int formerSize = currentSize;
       currentSize = h3Edge.size();
-      // cout << "current depth = " << d << endl;
-      // cout << " current size = " << currentSize << endl;
+      cout << "current depth = " << d << endl;
+      cout << " current size = " << currentSize << endl;
 
       for (int j = formerSize; j < currentSize; ++j) {
         for (int i = 0; i < gen.size(); ++i) {
-          Vec4f newPoint;
+          Edge newEdge;
           // gen[i].print();
           // h3Vert[j].print();
-          Mat4f::multiply(newPoint, gen[i], h3Vert[j]);
+          cout << j << endl;
+          Mat4f::multiply(newEdge.left, gen[i], h3Edge[j].left);
+          Mat4f::multiply(newEdge.right, gen[i], h3Edge[j].right);
 
           // bool unique = true;
 
@@ -66,9 +95,9 @@ struct HyperApp : OmniApp {
           // }
 
           // if(unique) {
-            cout << newPoint << endl;
-            h3Vert.push_back(newPoint);
-            h3Edge.push_back(Vec2i(j, h3Vert.size()-1));
+            cout << newEdge.left << endl;
+            cout << newEdge.right << endl;
+            h3Edge.push_back(newEdge);
           // }
         }
       }
@@ -143,6 +172,82 @@ struct HyperApp : OmniApp {
     return rotate * srcMat;
   }
 
+  Mat4f para(Mat4f& srcMat, float& p, float& q) {
+    Mat4f par = Mat4f(
+      0.5f*(2.f + p*p + q*q), p, -q, -0.5f*(p*p + q*q),
+      p, 1, 0, -p,
+      -q, 0, 1, q,
+      0.5f*(p*p + q*q), p, -q, 0.5f*(2.f - p*p - q*q));
+
+    return par * srcMat;
+  }
+
+  void addCube4D(Mesh& m, float l) {
+    m.reset();
+    m.primitive(Graphics::TRIANGLES);
+    int Nv = 8;
+
+    cubeVerts.push_back(Vec4f(0, -l, l, -l));
+    cubeVerts.push_back(Vec4f(0, l, l, -l));
+    cubeVerts.push_back(Vec4f(0, -l, -l, -l));
+    cubeVerts.push_back(Vec4f(0, l, -l, -l));
+    cubeVerts.push_back(Vec4f(0, -l, l, l));
+    cubeVerts.push_back(Vec4f(0, l, l, l));
+    cubeVerts.push_back(Vec4f(0, -l, -l, l));
+    cubeVerts.push_back(Vec4f(0, l, -l, l));
+
+    // All six faces will have the same tex coords
+    for(int i=0;i<6;++i){
+      m.texCoord( 0, 0);
+      m.texCoord( 1, 0);
+      m.texCoord( 1, 1);
+      m.texCoord( 0, 1);
+    }
+
+    for (int i = 0; i < Nv; ++i) {
+      Vec4f& v = cubeVerts[i];
+
+      // cout << v[3] * v[3] - v[0] * v[0] - v[1] * v[1] - v[2] * v[2] << endl;
+
+      v[0] = sqrt(v[1]*v[1] + v[2]*v[2] + v[3]*v[3] + 1);
+
+      cout << v << endl;
+
+      // apply camera rotation
+      Vec4f postRotVt;
+      Mat4f::multiply(postRotVt, camera, v);
+      // if (isRight) {
+      //   Mat4f::multiply(postRotVt, eye, postRotVt);
+      // }
+
+      // projection onto R3
+      Vec3f newVt = Vec3f(
+        postRotVt[1] / postRotVt[0],
+        postRotVt[2] / postRotVt[0],
+        postRotVt[3] / postRotVt[0]
+        );
+
+      cout << i << ": " << newVt << endl;
+
+      m.vertex(newVt);
+      // m.vertex(v);
+    }
+    // m.vertex(-l, l,-l); m.vertex( l, l,-l);
+    // m.vertex(-l,-l,-l); m.vertex( l,-l,-l);
+    // m.vertex(-l, l, l); m.vertex( l, l, l);
+    // m.vertex(-l,-l, l); m.vertex( l,-l, l);
+
+    static const int indices[] = {
+      6,5,4, 6,7,5, 7,1,5, 7,3,1,
+      3,0,1, 3,2,0, 2,4,0, 2,6,4,
+      4,1,0, 4,5,1, 2,3,6, 3,7,6
+    };
+
+    m.index(indices, sizeof(indices)/sizeof(*indices), m.vertices().size()-Nv);
+
+    m.generateNormals();
+  }
+
   // CONSTRUCTOR
   HyperApp() {
 
@@ -165,25 +270,70 @@ struct HyperApp : OmniApp {
     eye.setIdentity();
     eye = rotateEpsilon(eye, eyeAngle);
 
-    h3Vert.resize(2048);
-    h3Edge.resize(2048);
-    leftMesh.resize(4096);
-    rightMesh.resize(4096);
-
+    h3Edge.reserve(204800);
+    leftMesh.reserve(409600);
+    rightMesh.reserve(409600);
 
     Mat4f genA, genB, genAinv, genBinv;
 
+    SearchPaths sPath;
+
+    sPath.addAppPaths();
+    FilePath path = sPath.find("ducky.obj");
+    printf("reading %s\n", path.filepath().c_str());
+
+    ascene = Scene::import(path.filepath());
+
+    if(ascene==0) {
+      printf("error reading %s\n", path.filepath().c_str());
+    } else {
+      ascene->getBounds(scene_min,scene_max);
+      scene_center = (scene_min + scene_max) / 2.f;
+      ascene->dump();
+    }
+
+    Image img(sPath.find("hubble.jpg").filepath());
+    tex.allocate(img.array());
+
+    // // Aplonian Gasket
+    // genA = Mat4f(
+    //   3.f, 0.f, -2.f, 2.f,
+    //   0.f, 1.f, 0.f, 0.f,
+    //   -2.f, 0.f, 1.f, -2.f,
+    //   -2.f, 0.f, 2.f, -1.f);
+
+    // genB = Mat4f(
+    //   3.f, 2.f, -2.f, 0.f,
+    //   2.f, 1.f, -2.f, 0.f,
+    //   2.f, 2.f, -1.f, 0.f,
+    //   0.f, 0.f, 0.f, 1.f);
+
+    // // Figure 8 knot complement
+    // genA = Mat4f(
+    //   1.5f, 1.f, 0.f, -0.5f,
+    //   1.f, 1.f, 0.f, -1.f,
+    //   0.f, 0.f, 1.f, 0.f,
+    //   0.5f, 1.f, 0.f, 0.5f);
+
+    // genB = Mat4f(
+    //   1.5f, 0.5f, -sqrt(3) / 2.f, 0.5f,
+    //   0.5f, 1.f, 0.f, 0.5f,
+    //   -sqrt(3)/2.f, 0.f, 1.f, -sqrt(3)/2.f,
+    //   -0.5f, -0.5f, sqrt(3)/2.f, 0.5f);
+
+    // 
+
     genA = Mat4f(
-      3.f, 0.f, -2.f, 2.f,
-      0.f, 1.f, 0.f, 0.f,
-      -2.f, 0.f, 1.f, -2.f,
-      -2.f, 0.f, 2.f, -1.f);
+      5.93389, -5.64013, -1.21902, 0.956005,
+      4.32405, -4.06786, -1.20665, 1.30152,
+      -2.92548, 3.06786, -0.20665, -0.322444,
+      -2.63726, 2.61759, 0.99363, 0.340625);
 
     genB = Mat4f(
-      3.f, 2.f, -2.f, 0.f,
-      2.f, 1.f, -2.f, 0.f,
-      2.f, 2.f, -1.f, 0.f,
-      0.f, 0.f, 0.f, 1.f);
+      1.86603, 0.371514, -0.545342, 1.4306,
+      1.51127, 0.622915, -0.78229, 1.51127,
+      0.112695, -0.78229, -0.622915, 0.112695,
+      -0.430605, 0.371514, -0.545342, -0.866025);
 
     genAinv = genA;
     invert(genAinv);
@@ -191,10 +341,10 @@ struct HyperApp : OmniApp {
     genBinv = genB;
     invert(genBinv);
 
-    genA.print();
-    genAinv.print();
-    genB.print();
-    genBinv.print();
+    // genA.print();
+    // genAinv.print();
+    // genB.print();
+    // genBinv.print();
 
     generator.resize(4);
 
@@ -205,9 +355,11 @@ struct HyperApp : OmniApp {
 
     generateEdge(generator, seed, depth);
 
+    addCube4D(cube, cubeLen);
+
     for(int i = 0; i < h3Edge.size(); ++i) {
-      generateMesh(leftMesh[i], h3Vert[h3Edge[i][0]], h3Vert[h3Edge[i][1]], HSV((float)i / (float)h3Edge.size(), 1.f, 1.f), false);
-      generateMesh(rightMesh[i], h3Vert[h3Edge[i][0]], h3Vert[h3Edge[i][1]], HSV((float)i / (float)h3Edge.size(), 1.f, 1.f), true);
+      generateMesh(leftMesh[i], h3Edge[i].left, h3Edge[i].right, HSV((float)i / (float)h3Edge.size(), 1.f, 1.f), false);
+      generateMesh(rightMesh[i], h3Edge[i].left, h3Edge[i].right, HSV((float)i / (float)h3Edge.size(), 1.f, 1.f), true);
     }
   } // HyperApp()
   
@@ -219,8 +371,37 @@ struct HyperApp : OmniApp {
     
   // DRAW 
   virtual void onDraw(Graphics& g) {
+    if(initDraw) {
+      scene_list.begin();
+      for(unsigned i=0; i < ascene->meshes(); ++i) {
+        ascene->mesh(i, ducky);
+        g.draw(ducky);
+      }
+      scene_list.end();
+      initDraw = false;
+    }
+
     material(); // material ...
     light();    // light ...
+
+    // addCube4D(cube, cubeLen);
+
+    // g.draw(cube);
+
+    g.pushMatrix();
+      float tmp = scene_max[0]-scene_min[0];
+      tmp = al::max(scene_max[1] - scene_min[1],tmp);
+      tmp = al::max(scene_max[2] - scene_min[2],tmp);
+      tmp = 2.f / tmp;
+      g.scale(tmp);
+      g.translate(-scene_center);
+      shader().uniform("texture0", 1);
+      shader().uniform("texture", 1.0);
+      tex.bind(1);
+      scene_list.draw();
+      tex.unbind(1);
+      shader().uniform("texture", 0.0);
+    g.popMatrix();
       
     g.pushMatrix();  
       g.depthTesting(true);
@@ -230,8 +411,8 @@ struct HyperApp : OmniApp {
       g.lineWidth(5);
       
       for(int i = 0; i < h3Edge.size(); ++i) {
-        generateMesh(leftMesh[i], h3Vert[h3Edge[i][0]], h3Vert[h3Edge[i][1]], HSV((float)i / (float)h3Edge.size(), 1.f, 1.f), false);
-        generateMesh(rightMesh[i], h3Vert[h3Edge[i][0]], h3Vert[h3Edge[i][1]], HSV((float)i / (float)h3Edge.size(), 1.f, 1.f), true);
+        generateMesh(leftMesh[i], h3Edge[i].left, h3Edge[i].right, HSV((float)i / (float)h3Edge.size(), 1.f, 1.f), false);
+        generateMesh(rightMesh[i], h3Edge[i].left, h3Edge[i].right, HSV((float)i / (float)h3Edge.size(), 1.f, 1.f), true);
         
         if (omni().currentEye() == 0) g.draw(leftMesh[i]);
         else g.draw(rightMesh[i]);
@@ -304,8 +485,9 @@ struct HyperApp : OmniApp {
 
     camera.setIdentity();
     camera = rotateTheta(camera, theta);
-    camera = rotateEpsilon(camera, epsilon);
-    camera = rotatePhi(camera, phi);
+    // camera = rotateEpsilon(camera, epsilon);
+    // camera = rotatePhi(camera, phi);
+    camera = para(camera, epsilon, phi);
 
     eye.setIdentity();
     eye = rotateEpsilon(eye, eyeAngle);
