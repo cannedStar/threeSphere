@@ -16,6 +16,7 @@ using namespace al;
 using namespace std;
 
 static const int edgeRes = 2;
+static const int objMeshNum = 8;
 
 struct Edge {
   Vec4f left;
@@ -31,6 +32,10 @@ struct HyperApp : OmniApp {
   std::vector<Mesh> leftMesh, rightMesh;
 
   std::vector<Vec4f> cubeVerts;
+
+  std::vector<Vec4f> objVerts[objMeshNum];
+  std::vector<Mesh> leftObjMesh, rightObjMesh;
+  Graphics::Primitive prim;
 
   Texture tex;
   Scene* ascene = 0;
@@ -65,8 +70,8 @@ struct HyperApp : OmniApp {
       newEdge.left = seed;
       for (int i = 0; i < gen.size(); ++i) {
         Mat4f::multiply(newEdge.right, gen[i], seed);
-        cout << newEdge.left << endl;
-        cout << newEdge.right << endl;
+        // cout << newEdge.left << endl;
+        // cout << newEdge.right << endl;
         h3Edge.push_back(newEdge);
       }
     }
@@ -74,15 +79,15 @@ struct HyperApp : OmniApp {
     for (int d = 1; d < depth; ++d) {
       int formerSize = currentSize;
       currentSize = h3Edge.size();
-      cout << "current depth = " << d << endl;
-      cout << " current size = " << currentSize << endl;
+      // cout << "current depth = " << d << endl;
+      // cout << " current size = " << currentSize << endl;
 
       for (int j = formerSize; j < currentSize; ++j) {
         for (int i = 0; i < gen.size(); ++i) {
           Edge newEdge;
           // gen[i].print();
           // h3Vert[j].print();
-          cout << j << endl;
+          // cout << j << endl;
           Mat4f::multiply(newEdge.left, gen[i], h3Edge[j].left);
           Mat4f::multiply(newEdge.right, gen[i], h3Edge[j].right);
 
@@ -95,8 +100,8 @@ struct HyperApp : OmniApp {
           // }
 
           // if(unique) {
-            cout << newEdge.left << endl;
-            cout << newEdge.right << endl;
+            // cout << newEdge.left << endl;
+            // cout << newEdge.right << endl;
             h3Edge.push_back(newEdge);
           // }
         }
@@ -135,6 +140,36 @@ struct HyperApp : OmniApp {
       tgtMesh.vertex(newPoint);
       tgtMesh.color(meshColor);
     }
+  }
+
+  void genObjMesh(Mesh& tgtMesh, std::vector<Vec4f>& srcVt, const bool isRight = false) {
+    tgtMesh.reset();
+    tgtMesh.primitive(prim);
+
+    for(int i = 0; i < srcVt.size(); ++i) {
+      // cout << srcVt.size() << endl;
+      // apply camera rotation
+      Vec4f postRotVt;
+      Mat4f::multiply(postRotVt, camera, srcVt[i]);
+      if (isRight) {
+        Mat4f::multiply(postRotVt, eye, postRotVt);
+      }
+
+      // projection onto R3
+      Vec3f newVt = Vec3f(
+        postRotVt[1] / postRotVt[0],
+        postRotVt[2] / postRotVt[0],
+        postRotVt[3] / postRotVt[0]
+        );
+
+      // cout << newVt << endl;
+      tgtMesh.vertex(newVt);
+      // cout << "check" << endl;
+      
+    }
+
+
+    // tgtMesh.generateNormals();
   }
 
   // t2 - x2 - y2 -z2 = 1
@@ -211,7 +246,7 @@ struct HyperApp : OmniApp {
 
       v[0] = sqrt(v[1]*v[1] + v[2]*v[2] + v[3]*v[3] + 1);
 
-      cout << v << endl;
+      // cout << v << endl;
 
       // apply camera rotation
       Vec4f postRotVt;
@@ -227,7 +262,7 @@ struct HyperApp : OmniApp {
         postRotVt[3] / postRotVt[0]
         );
 
-      cout << i << ": " << newVt << endl;
+      // cout << i << ": " << newVt << endl;
 
       m.vertex(newVt);
       // m.vertex(v);
@@ -274,6 +309,12 @@ struct HyperApp : OmniApp {
     leftMesh.reserve(409600);
     rightMesh.reserve(409600);
 
+    for(int i = 0; i < objMeshNum; ++i) {
+      objVerts[i].reserve(48000);
+    }
+    leftObjMesh.reserve(objMeshNum);
+    rightObjMesh.reserve(objMeshNum);
+
     Mat4f genA, genB, genAinv, genBinv;
 
     SearchPaths sPath;
@@ -295,6 +336,34 @@ struct HyperApp : OmniApp {
     Image img(sPath.find("hubble.jpg").filepath());
     tex.allocate(img.array());
 
+
+    float tmp = scene_max[0]-scene_min[0];
+    tmp = al::max(scene_max[1] - scene_min[1],tmp);
+    tmp = al::max(scene_max[2] - scene_min[2],tmp);
+    tmp = 2.f / tmp;
+
+    for(unsigned i=0; i < ascene->meshes(); ++i) {
+      ascene->mesh(i, ducky);
+      for(unsigned j = 0; j < ducky.vertices().size(); ++j) {
+        // cout << ducky.vertices().size() << endl;
+        Vec3f v = ducky.vertices()[j];
+
+        v = v - scene_center;
+        v = v * tmp;
+        v *= 0.1;
+
+        Vec4f newObjVert = Vec4f(sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2] + 1), v[0], v[1], v[2]);
+        objVerts[i].push_back(newObjVert);
+        prim = (Graphics::Primitive)ducky.primitive();
+      }
+    }
+
+    // cout << ascene->meshes() << endl;
+    for(int i = 0; i < ascene->meshes(); ++i) {
+      genObjMesh(leftObjMesh[i], objVerts[i], false);
+      genObjMesh(rightObjMesh[i], objVerts[i], true);
+    }
+    
     // // Aplonian Gasket
     // genA = Mat4f(
     //   3.f, 0.f, -2.f, 2.f,
@@ -371,15 +440,15 @@ struct HyperApp : OmniApp {
     
   // DRAW 
   virtual void onDraw(Graphics& g) {
-    if(initDraw) {
-      scene_list.begin();
-      for(unsigned i=0; i < ascene->meshes(); ++i) {
-        ascene->mesh(i, ducky);
-        g.draw(ducky);
-      }
-      scene_list.end();
-      initDraw = false;
-    }
+    // if(initDraw) {
+    //   scene_list.begin();
+    //   for(unsigned i=0; i < ascene->meshes(); ++i) {
+    //     ascene->mesh(i, ducky);
+    //     g.draw(ducky);
+    //   }
+    //   scene_list.end();
+    //   initDraw = false;
+    // }
 
     material(); // material ...
     light();    // light ...
@@ -388,19 +457,33 @@ struct HyperApp : OmniApp {
 
     // g.draw(cube);
 
+    // g.pushMatrix();
+    //   float tmp = scene_max[0]-scene_min[0];
+    //   tmp = al::max(scene_max[1] - scene_min[1],tmp);
+    //   tmp = al::max(scene_max[2] - scene_min[2],tmp);
+    //   tmp = 2.f / tmp;
+    //   g.scale(tmp);
+    //   g.translate(-scene_center);
+    //   shader().uniform("texture0", 1);
+    //   shader().uniform("texture", 1.0);
+    //   tex.bind(1);
+    //   scene_list.draw();
+    //   tex.unbind(1);
+    //   shader().uniform("texture", 0.0);
+    // g.popMatrix();
+
     g.pushMatrix();
-      float tmp = scene_max[0]-scene_min[0];
-      tmp = al::max(scene_max[1] - scene_min[1],tmp);
-      tmp = al::max(scene_max[2] - scene_min[2],tmp);
-      tmp = 2.f / tmp;
-      g.scale(tmp);
-      g.translate(-scene_center);
-      shader().uniform("texture0", 1);
-      shader().uniform("texture", 1.0);
-      tex.bind(1);
-      scene_list.draw();
-      tex.unbind(1);
-      shader().uniform("texture", 0.0);
+      // shader().uniform("texture0", 1);
+      // shader().uniform("texture", 1.0);
+      // tex.bind(1);
+      for(int i = 0; i < ascene->meshes(); ++i) {
+        genObjMesh(leftObjMesh[i], objVerts[i], false);
+        genObjMesh(rightObjMesh[i], objVerts[i], true);
+        if(omni().currentEye() == 0) g.draw(leftObjMesh[i]);
+        else g.draw(rightObjMesh[i]);
+      }
+      // tex.unbind(1);
+      // shader().uniform("texture", 0.0);
     g.popMatrix();
       
     g.pushMatrix();  
