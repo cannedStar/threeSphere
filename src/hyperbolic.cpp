@@ -33,9 +33,9 @@ struct HyperApp : OmniApp {
 
   std::vector<Vec4f> cubeVerts;
 
-  std::vector<Vec4f> objVerts[objMeshNum];
-  std::vector<Mesh> leftObjMesh, rightObjMesh;
-  Graphics::Primitive prim;
+  // std::vector<Vec4f> objVerts[objMeshNum];
+  // std::vector<Mesh> leftObjMesh, rightObjMesh;
+  // Graphics::Primitive prim;
 
   Texture tex;
   Scene* ascene = 0;
@@ -53,7 +53,7 @@ struct HyperApp : OmniApp {
   Vec4f seed = Vec4f(1, 0, 0, 0);
   int depth = 2;
 
-  float cubeLen = 0.5;
+  float cubeLen = 0.1;
 
   bool initDraw = true;
 
@@ -142,35 +142,35 @@ struct HyperApp : OmniApp {
     }
   }
 
-  void genObjMesh(Mesh& tgtMesh, std::vector<Vec4f>& srcVt, const bool isRight = false) {
-    tgtMesh.reset();
-    tgtMesh.primitive(prim);
+  // void genObjMesh(Mesh& tgtMesh, std::vector<Vec4f>& srcVt, const bool isRight = false) {
+  //   tgtMesh.reset();
+  //   tgtMesh.primitive(prim);
 
-    for(int i = 0; i < srcVt.size(); ++i) {
-      // cout << srcVt.size() << endl;
-      // apply camera rotation
-      Vec4f postRotVt;
-      Mat4f::multiply(postRotVt, camera, srcVt[i]);
-      if (isRight) {
-        Mat4f::multiply(postRotVt, eye, postRotVt);
-      }
+  //   for(int i = 0; i < srcVt.size(); ++i) {
+  //     // cout << srcVt.size() << endl;
+  //     // apply camera rotation
+  //     Vec4f postRotVt;
+  //     Mat4f::multiply(postRotVt, camera, srcVt[i]);
+  //     if (isRight) {
+  //       Mat4f::multiply(postRotVt, eye, postRotVt);
+  //     }
 
-      // projection onto R3
-      Vec3f newVt = Vec3f(
-        postRotVt[1] / postRotVt[0],
-        postRotVt[2] / postRotVt[0],
-        postRotVt[3] / postRotVt[0]
-        );
+  //     // projection onto R3
+  //     Vec3f newVt = Vec3f(
+  //       postRotVt[1] / postRotVt[0],
+  //       postRotVt[2] / postRotVt[0],
+  //       postRotVt[3] / postRotVt[0]
+  //       );
 
-      // cout << newVt << endl;
-      tgtMesh.vertex(newVt);
-      // cout << "check" << endl;
+  //     // cout << newVt << endl;
+  //     tgtMesh.vertex(newVt);
+  //     // cout << "check" << endl;
       
-    }
+  //   }
 
 
-    // tgtMesh.generateNormals();
-  }
+  //   // tgtMesh.generateNormals();
+  // }
 
   // t2 - x2 - y2 -z2 = 1
   // x/t, y/t, z/t
@@ -309,11 +309,11 @@ struct HyperApp : OmniApp {
     leftMesh.reserve(409600);
     rightMesh.reserve(409600);
 
-    for(int i = 0; i < objMeshNum; ++i) {
-      objVerts[i].reserve(48000);
-    }
-    leftObjMesh.reserve(objMeshNum);
-    rightObjMesh.reserve(objMeshNum);
+    // for(int i = 0; i < objMeshNum; ++i) {
+    //   objVerts[i].reserve(48000);
+    // }
+    // leftObjMesh.reserve(objMeshNum);
+    // rightObjMesh.reserve(objMeshNum);
 
     Mat4f genA, genB, genAinv, genBinv;
 
@@ -337,32 +337,32 @@ struct HyperApp : OmniApp {
     tex.allocate(img.array());
 
 
-    float tmp = scene_max[0]-scene_min[0];
-    tmp = al::max(scene_max[1] - scene_min[1],tmp);
-    tmp = al::max(scene_max[2] - scene_min[2],tmp);
-    tmp = 2.f / tmp;
+    // float tmp = scene_max[0]-scene_min[0];
+    // tmp = al::max(scene_max[1] - scene_min[1],tmp);
+    // tmp = al::max(scene_max[2] - scene_min[2],tmp);
+    // tmp = 2.f / tmp;
 
-    for(unsigned i=0; i < ascene->meshes(); ++i) {
-      ascene->mesh(i, ducky);
-      for(unsigned j = 0; j < ducky.vertices().size(); ++j) {
-        // cout << ducky.vertices().size() << endl;
-        Vec3f v = ducky.vertices()[j];
+    // for(unsigned i=0; i < ascene->meshes(); ++i) {
+    //   ascene->mesh(i, ducky);
+    //   for(unsigned j = 0; j < ducky.vertices().size(); ++j) {
+    //     // cout << ducky.vertices().size() << endl;
+    //     Vec3f v = ducky.vertices()[j];
 
-        v = v - scene_center;
-        v = v * tmp;
-        v *= 0.1;
+    //     v = v - scene_center;
+    //     v = v * tmp;
+    //     v *= 0.1;
 
-        Vec4f newObjVert = Vec4f(sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2] + 1), v[0], v[1], v[2]);
-        objVerts[i].push_back(newObjVert);
-        prim = (Graphics::Primitive)ducky.primitive();
-      }
-    }
+    //     Vec4f newObjVert = Vec4f(sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2] + 1), v[0], v[1], v[2]);
+    //     objVerts[i].push_back(newObjVert);
+    //     prim = (Graphics::Primitive)ducky.primitive();
+    //   }
+    // }
 
-    // cout << ascene->meshes() << endl;
-    for(int i = 0; i < ascene->meshes(); ++i) {
-      genObjMesh(leftObjMesh[i], objVerts[i], false);
-      genObjMesh(rightObjMesh[i], objVerts[i], true);
-    }
+    // // cout << ascene->meshes() << endl;
+    // for(int i = 0; i < ascene->meshes(); ++i) {
+    //   genObjMesh(leftObjMesh[i], objVerts[i], false);
+    //   genObjMesh(rightObjMesh[i], objVerts[i], true);
+    // }
     
     // // Aplonian Gasket
     // genA = Mat4f(
@@ -453,9 +453,9 @@ struct HyperApp : OmniApp {
     material(); // material ...
     light();    // light ...
 
-    // addCube4D(cube, cubeLen);
+    addCube4D(cube, cubeLen);
 
-    // g.draw(cube);
+    g.draw(cube);
 
     // g.pushMatrix();
     //   float tmp = scene_max[0]-scene_min[0];
@@ -472,19 +472,19 @@ struct HyperApp : OmniApp {
     //   shader().uniform("texture", 0.0);
     // g.popMatrix();
 
-    g.pushMatrix();
-      // shader().uniform("texture0", 1);
-      // shader().uniform("texture", 1.0);
-      // tex.bind(1);
-      for(int i = 0; i < ascene->meshes(); ++i) {
-        genObjMesh(leftObjMesh[i], objVerts[i], false);
-        genObjMesh(rightObjMesh[i], objVerts[i], true);
-        if(omni().currentEye() == 0) g.draw(leftObjMesh[i]);
-        else g.draw(rightObjMesh[i]);
-      }
-      // tex.unbind(1);
-      // shader().uniform("texture", 0.0);
-    g.popMatrix();
+    // g.pushMatrix();
+    //   // shader().uniform("texture0", 1);
+    //   // shader().uniform("texture", 1.0);
+    //   // tex.bind(1);
+    //   for(int i = 0; i < ascene->meshes(); ++i) {
+    //     genObjMesh(leftObjMesh[i], objVerts[i], false);
+    //     genObjMesh(rightObjMesh[i], objVerts[i], true);
+    //     if(omni().currentEye() == 0) g.draw(leftObjMesh[i]);
+    //     else g.draw(rightObjMesh[i]);
+    //   }
+    //   // tex.unbind(1);
+    //   // shader().uniform("texture", 0.0);
+    // g.popMatrix();
       
     g.pushMatrix();  
       g.depthTesting(true);
