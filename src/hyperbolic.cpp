@@ -527,6 +527,8 @@ struct HyperApp : OmniApp {
         case 'y': epsilon += 0.1f; break;
         case 'j': phi -= 0.1f; break;
         case 'u': phi += 0.1f; break;
+        case 'i': ++depth; generateEdge(generator, seed, depth); break;
+        case 'k': --depth; generateEdge(generator, seed, depth); break;
 
         case '[': eyeAngle -= 0.01f; break;
         case ']': eyeAngle += 0.01f; break;
