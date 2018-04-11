@@ -242,15 +242,15 @@ struct HyperApp : OmniApp {
         vec4 textureColor = texture2D(texture0, gl_TexCoord[0].st);
         if( texture > 0.0){ colorMixed = mix(color, textureColor, texture);} 
         else {colorMixed = color;}
-        vec4 final_color = colorMixed * gl_LightSource[0].ambient;
+        vec4 final_color = colorMixed * gl_LightSource[7].ambient;
         vec3 N = normalize(normal);
         vec3 L = lightDir;
         float lambertTerm = max(dot(N, L), 0.0);
-        final_color += gl_LightSource[0].diffuse * colorMixed * lambertTerm;
+        final_color += gl_LightSource[7].diffuse * colorMixed * lambertTerm;
         vec3 E = eyeVec;
         vec3 R = reflect(-L, N);
         float spec = pow(max(dot(R, E), 0.0), 0.9 + 1e-20);
-        final_color += gl_LightSource[0].specular * spec;
+        final_color += gl_LightSource[7].specular * spec;
         gl_FragColor = mix(colorMixed, final_color, lighting);
         if (texture > 0.0) gl_FragColor.a = textureColor.r; // sets alpha to 0 for background
       }
