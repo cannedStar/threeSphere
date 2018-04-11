@@ -22,7 +22,7 @@ using namespace al;
 using namespace std;
 
 const int edgeRes = 2;
-const int maxDepth = 4;
+const int maxDepth = 8;
 
 struct Transform {
   Mat4d mat;
@@ -190,6 +190,7 @@ struct HyperApp : OmniApp {
     eye.setIdentity();
     eye = rotateEpsilon(eye, eyeAngle);
 
+
     leftMesh.reserve(409600);
     rightMesh.reserve(409600);
 
@@ -198,31 +199,31 @@ struct HyperApp : OmniApp {
 
     Mat4d genA, genB, genAinv, genBinv;
 
-    // Aplonian Gasket
-    genA = Mat4d(
-      3.0, 0.0, -2.0, 2.0,
-      0.0, 1.0, 0.0, 0.0,
-      -2.0, 0.0, 1.0, -2.0,
-      -2.0, 0.0, 2.0, -1.0);
-
-    genB = Mat4d(
-      3.0, 2.0, -2.0, 0.0,
-      2.0, 1.0, -2.0, 0.0,
-      2.0, 2.0, -1.0, 0.0,
-      0.0, 0.0, 0.0, 1.0);
-
-    // // Figure 8 knot complement
+    // // Aplonian Gasket
     // genA = Mat4d(
-    //   1.5, 1.0, 0.0, -0.5,
-    //   1.0, 1.0, 0.0, -1.0,
-    //   0.0, 0.0, 1.0, 0.0,
-    //   0.5, 1.0, 0.0, 0.5);
+    //   3.0, 0.0, -2.0, 2.0,
+    //   0.0, 1.0, 0.0, 0.0,
+    //   -2.0, 0.0, 1.0, -2.0,
+    //   -2.0, 0.0, 2.0, -1.0);
 
     // genB = Mat4d(
-    //   1.5, 0.5, -sqrt(3)/2.0, 0.5,
-    //   0.5, 1.0, 0.0, 0.5,
-    //   -sqrt(3)/2.0, 0.0, 1.0, -sqrt(3)/2.0,
-    //   -0.5, -0.5, sqrt(3)/2.0, 0.5);
+    //   3.0, 2.0, -2.0, 0.0,
+    //   2.0, 1.0, -2.0, 0.0,
+    //   2.0, 2.0, -1.0, 0.0,
+    //   0.0, 0.0, 0.0, 1.0);
+
+    // Figure 8 knot complement
+    genA = Mat4d(
+      1.5, 1.0, 0.0, -0.5,
+      1.0, 1.0, 0.0, -1.0,
+      0.0, 0.0, 1.0, 0.0,
+      0.5, 1.0, 0.0, 0.5);
+
+    genB = Mat4d(
+      1.5, 0.5, -sqrt(3)/2.0, 0.5,
+      0.5, 1.0, 0.0, 0.5,
+      -sqrt(3)/2.0, 0.0, 1.0, -sqrt(3)/2.0,
+      -0.5, -0.5, sqrt(3)/2.0, 0.5);
 
     genAinv = genA;
     invert(genAinv);
@@ -248,6 +249,7 @@ struct HyperApp : OmniApp {
       generateMesh(leftMesh[i], transforms[i], false);
       generateMesh(rightMesh[i], transforms[i], true);
     }
+
   } // HyperApp()
   
   virtual ~HyperApp() {}    // what does this do?

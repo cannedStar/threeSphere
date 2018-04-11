@@ -21,8 +21,8 @@ struct Mesh4D {
       double v0 = sqrt(v1*v1 + v2*v2 + v3*v3 + 1.0);
       vertices[i] = Vec4d(v0, v1, v2, v3);
 
-      normals[i] = m.normals()[i];
-      texCoords[i] = m.texCoord2s()[i];
+      if(m.normals().size() > 0) normals[i] = m.normals()[i];
+      if(m.texCoord2s().size() > 0) texCoords[i] = m.texCoord2s()[i];
     }
 
     // for (unsigned i = 0; i < Nv; ++i) {
