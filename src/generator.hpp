@@ -9,6 +9,12 @@
 using namespace al;
 using namespace std;
 
+enum GroupType {
+  EUCLEADIAN = 0,
+  SPHERICAL,
+  HYPERBOLIC
+};
+
 struct Transform {
   Mat4d mat;
   int depth;
@@ -17,8 +23,10 @@ struct Transform {
 struct Generator {
   std::vector<Mat4d> gen;
   std::vector<Transform> transforms;
+  GroupType type;
 
-  void init(Mat4d& a, Mat4d& b, int depth = 8) {
+  Generator(Mat4d& a, Mat4d& b, int depth = 8, GroupType t=GroupType::EUCLEADIAN) {
+    type = t;
     Mat4d a_inv = a;
     Mat4d b_inv = b;
     invert(a_inv);
@@ -66,6 +74,52 @@ struct Generator {
   Mat4d& get(int n) { return transforms[n].mat; }
 
   int getDepth(int n) { return transforms[n].depth; }
+};
+
+struct Group {
+  std::vector<Generator> generators;
+
+  void init() {
+    Mat4d a, b;
+
+    // Figure 8 knot complement
+    a = Mat4d(
+      1.5, 1.0, 0.0, -0.5,
+      1.0, 1.0, 0.0, -1.0,
+      0.0, 0.0, 1.0, 0.0,
+      0.5, 1.0, 0.0, 0.5);
+    b = Mat4d(
+      1.5, 0.5, -sqrt(3)/2.0, 0.5,
+      0.5, 1.0, 0.0, 0.5,
+      -sqrt(3)/2.0, 0.0, 1.0, -sqrt(3)/2.0,
+      -0.5, -0.5, sqrt(3)/2.0, 0.5);
+
+    generators.emplace_back(a, b, 8, GroupType::HYPERBOLIC);
+
+
+    // Binary Tetrahedral
+    a = 0.5 * Mat4d(
+      1, -1, -1, -1,
+      1, 1, -1, 1,
+      1, 1, 1, -1,
+      1, -1, 1, 1);
+    b = 0.5 * Mat4d(
+      1, -1, -1, 1,
+      1, 1, 1, 1,
+      1, -1, 1, -1,
+      -1, -1, 1, 1);
+
+    generators.emplace_back(a, b, 4, GroupType::SPHERICAL);
+
+    // // 3-Torus
+    // a = Mat4d(
+    //   1, 0, 0, 1,
+    //   0, 1, 0, 0,
+    //   0, 0, 1, 0,
+    //   0, 0, 0, 1);
+    // b = Mat4d(
+    //   )
+  }
 };
 
 #endif

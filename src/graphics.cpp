@@ -25,17 +25,20 @@ struct HyperApp : OmniStereoGraphicsRenderer {
   double theta, epsilon, phi;
   int depth;
 
+  int activeGroup = 0;
+  int projType = 0;
+
   std::vector<Mesh4D> meshes4D;
-  Graphics::Primitive prim;
 
   Texture tex;
   Scene* ascene = 0;
   Vec3f scene_center;
   float scene_scaleInv;
 
-  Generator fig8;
+  Group group;
 
   HyperApp() {
+    state = new State;
     nav().pos(0.0, 0.0, 0.0);
 
     initWindow();
@@ -61,7 +64,7 @@ struct HyperApp : OmniStereoGraphicsRenderer {
     } else {
       ascene->getBounds(scene_min,scene_max);
       scene_center = (scene_min + scene_max) / 2.f;
-      ascene->dump();
+      // ascene->dump();
     }
 
     scene_scaleInv = scene_max[0]-scene_min[0];
@@ -81,8 +84,6 @@ struct HyperApp : OmniStereoGraphicsRenderer {
         v *= 0.5;
       }
 
-      prim = (Graphics::Primitive)mesh.primitive();
-      
       Mesh4D mesh4D;
       mesh4D.init(mesh);
 
@@ -93,38 +94,17 @@ struct HyperApp : OmniStereoGraphicsRenderer {
     Image img(sPath.find("hue.png").filepath());
     tex.allocate(img.array());
 
-    // // Figure 8 knot complement
-    // Mat4d genA = Mat4d(
-    //   1.5, 1.0, 0.0, -0.5,
-    //   1.0, 1.0, 0.0, -1.0,
-    //   0.0, 0.0, 1.0, 0.0,
-    //   0.5, 1.0, 0.0, 0.5);
-
-    // Mat4d genB = Mat4d(
-    //   1.5, 0.5, -sqrt(3)/2.0, 0.5,
-    //   0.5, 1.0, 0.0, 0.5,
-    //   -sqrt(3)/2.0, 0.0, 1.0, -sqrt(3)/2.0,
-    //   -0.5, -0.5, sqrt(3)/2.0, 0.5);
-
-    Mat4d genA = 0.5 * Mat4d(
-      1, -1, -1, -1,
-      1, 1, -1, 1,
-      1, 1, 1, -1,
-      1, -1, 1, 1);
-
-    Mat4d genB = 0.5 * Mat4d(
-      1, -1, -1, 1,
-      1, 1, 1, 1,
-      1, -1, 1, -1,
-      -1, -1, 1, 1);
-
-    fig8.init(genA, genB, 4);
+    group.init();
   }
 
   ~HyperApp() {}
 
   void onAnimate(double dt) {
-    pose.set(nav());
+    // pose.set(nav());
+
+    int popCount = taker.get(*state);
+    pose.set(state->pose);
+    camera = state->camera;
   }
 
   void onDraw(Graphics& g) {
@@ -136,29 +116,18 @@ struct HyperApp : OmniStereoGraphicsRenderer {
       shader().uniform("texture", 1.0);
       tex.bind(1);
       
-      Mesh mesh;
-      for(int k = 0; k < fig8.size(); ++k) {
-        if (fig8.getDepth(k) > depth) break;
-        for(int j = 0; j < meshes4D.size(); ++j) {
-          Mesh4D& mesh4D = meshes4D[j];
-          mesh.reset();
-          mesh.primitive(prim);
-          for(int i = 0; i < mesh4D.vertices.size(); ++i) {
-            mesh.normal(mesh4D.normals[i]);
-            mesh.texCoord(mesh4D.texCoords[i]);
-
-            Vec4d newVert;
-            // Vec4d newVert = mesh4D.vertices[i];
-            // Mat4d::multiply(newVert, camera * transforms[i].mat, mesh4D.vertices[i]);
-            Mat4d::multiply(newVert, camera * fig8.get(k), mesh4D.vertices[i]);
-            Vec3d temp = s3tor3(newVert);
-            // Vec3d temp = klein(newVert);
-            // mesh.vertex(uhs(temp));
-            mesh.vertex(temp);
-          }
-          g.draw(mesh);
+      // for (int i = 0; i < group.size(); ++i)
+        // Generator& gen = group[i];
+      Generator& gen = group.generators[activeGroup];
+      for (int j = 0; j < gen.size(); ++j) {
+        if (gen.getDepth(j) > depth) break;
+        for (int k = 0; k < meshes4D.size(); ++k) {
+          Mesh4D& mesh4D = meshes4D[k];
+          mesh4D.update(camera * gen.get(j), gen.type, projType);
+          g.draw(mesh4D.mesh);
         }
       }
+      // }
 
       tex.unbind(1);
       shader().uniform("texture", 0.0);
@@ -178,6 +147,9 @@ struct HyperApp : OmniStereoGraphicsRenderer {
       case 'u': phi += 0.1; break;
       case 'i': ++depth; break;
       case 'k': --depth; break;
+      case '1': activeGroup = 0; projType = 0; break;
+      case '2': activeGroup = 0; projType = 1; break;
+      case '3': activeGroup = 1; projType = 2; break;
 
       // case '1': omni().mode(OmniStereo::DUAL).stereo(true); break;
       // case '2': omni().mode(OmniStereo::ANAGLYPH).stereo(true); break;
@@ -185,11 +157,15 @@ struct HyperApp : OmniStereoGraphicsRenderer {
     }
 
     camera.setIdentity();
-    // camera = rotateTheta(camera, theta);
-    // camera = rotateEpsilon(camera, epsilon);
-    // camera = rotatePhi(camera, phi);
-    // camera = para(camera, epsilon, phi);
-    camera = rotate3s(camera, theta, phi);
+    GroupType type = group.generators[activeGroup].type;
+    if (type == GroupType::HYPERBOLIC) {
+      camera = rotateTheta(camera, theta);
+      camera = rotateEpsilon(camera, epsilon);
+      camera = rotatePhi(camera, phi);
+      // camera = para(camera, epsilon, phi);
+    } else if (type == GroupType::SPHERICAL) {
+      camera = rotate3s(camera, theta, phi);
+    }
 
     return true;
   } // onKeyDown
@@ -221,6 +197,11 @@ struct HyperApp : OmniStereoGraphicsRenderer {
       }
     );
   } // fragmentCode
+
+  void start() {
+    taker.start();
+    OmniStereoGraphicsRenderer::start();
+  }
 };
 
 int main(int argc, char* argv[]) {
