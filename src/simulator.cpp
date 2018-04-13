@@ -91,6 +91,8 @@ struct HyperApp : OmniStereoGraphicsRenderer {
 };
 
 int main(int argc, char* argv[]) {
-  HyperApp().start();
+  HyperApp hyperApp;
+  hyperApp.maker.start();
+  hyperApp.start();
   return 0;
 }
