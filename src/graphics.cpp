@@ -105,6 +105,9 @@ struct HyperApp : OmniStereoGraphicsRenderer {
     int popCount = taker.get(*state);
     pose.set(state->pose);
     camera = state->camera;
+    depth = state->depth;
+    activeGroup = state->activeGroup;
+    projType = state->projType;
   }
 
   void onDraw(Graphics& g) {
