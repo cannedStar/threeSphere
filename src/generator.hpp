@@ -33,6 +33,9 @@ struct Generator {
     Mat4d a_inv = a;
     invert(a_inv);
 
+    a.print();
+    a_inv.print();
+
     gen.resize(2);
     gen[0] = a;
     gen[1] = a_inv;
@@ -68,8 +71,6 @@ struct Generator {
     invert(a_inv);
     invert(b_inv);
     invert(c_inv);
-    c.print();
-    c_inv.print();
 
     gen.resize(6);
     gen[0] = a;
@@ -93,7 +94,6 @@ struct Generator {
       int oldIdx = idx;
       idx = transforms.size();
 
-      cout << gen.size() << endl;
       for (int i = oldIdx; i < idx; ++i) {
         Transform& old = transforms[i];
         for (int j = 0; j < gen.size(); ++j) {
@@ -108,7 +108,7 @@ struct Generator {
               break;
             }
           }
-          if (unique) { transforms.push_back(newTrans); newTrans.mat.print(); }
+          if (unique) transforms.push_back(newTrans);
         }
       }
     }
