@@ -74,10 +74,7 @@ struct HyperApp : OmniStereoGraphicsRenderer {
         v *= 0.5;
       }
 
-      Mesh4D mesh4D;
-      mesh4D.init(mesh);
-
-      meshes4D.push_back(mesh4D);
+      meshes4D.emplace_back(mesh);
     }
 
     // Image img(sPath.find("hubble.jpg").filepath());
@@ -107,11 +104,16 @@ struct HyperApp : OmniStereoGraphicsRenderer {
       tex.bind(1);
       
       Generator& gen = group.generators[state->activeGroup];
-      for (int j = 0; j < gen.size(); ++j) {
-        if (gen.getDepth(j) > state->depth) break;
-        for (int k = 0; k < meshes4D.size(); ++k) {
-          Mesh4D& mesh4D = meshes4D[k];
+      for (int i = 0; i < meshes4D.size(); ++i) {
+        Mesh4D& mesh4D = meshes4D[i];
+        for (int j = 0; j < gen.size(); ++j) {
+          if (gen.getDepth(j) > state->depth) break;      
+
+          // if(!mesh4D.busy)
+          //   mesh4D.updateT(state->camera * gen.get(j), gen.type, state->projType);
+
           mesh4D.update(state->camera * gen.get(j), gen.type, state->projType);
+
           g.draw(mesh4D.mesh);
         }
       }

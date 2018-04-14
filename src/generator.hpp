@@ -156,15 +156,6 @@ struct Group {
 
     generators.emplace_back(a, b, 4, GroupType::SPHERICAL);
 
-    // // 3-Torus
-    // a = Mat4d(
-    //   1, 0, 0, 1,
-    //   0, 1, 0, 0,
-    //   0, 0, 1, 0,
-    //   0, 0, 0, 1);
-    // b = Mat4d(
-    //   )
-
     // 3-Torus;
     a = Mat4d(
       1, 0, 0, 0,

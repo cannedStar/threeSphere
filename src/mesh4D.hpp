@@ -1,6 +1,9 @@
 #ifndef INCLUDE_MESH4D_HPP
 #define INCLUDE_MESH4D_HPP
 
+#include <thread>
+#include <atomic>
+
 #include "generator.hpp"
 
 struct Mesh4D {
@@ -10,7 +13,11 @@ struct Mesh4D {
   unsigned vNum, nNum;
   GroupType currentType;
 
-  void init(Mesh& m) {
+  // std::thread polyThread;
+
+  // atomic<bool> busy { false };
+
+  Mesh4D(Mesh& m) {
     mesh.reset();
     mesh = m;
 
@@ -45,9 +52,17 @@ struct Mesh4D {
         case 3: mesh.vertices()[i] = eucl(newVert); break;
       }
     }
+
+    // busy = false;
   }
 
-  
+  // void updateT(Mat4d mat, GroupType type, int proj) {
+  //   busy = true;
+  //   polyThread = std::thread([this, mat, type, proj] {
+  //     this->update(mat, type, proj);
+  //   });
+  //   polyThread.detach();
+  // }
 
   void setType(GroupType type) {
     if(currentType != type) {
