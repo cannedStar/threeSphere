@@ -68,6 +68,8 @@ struct Generator {
     invert(a_inv);
     invert(b_inv);
     invert(c_inv);
+    c.print();
+    c_inv.print();
 
     gen.resize(6);
     gen[0] = a;
@@ -169,19 +171,18 @@ struct Group {
       1, 1, 0, 0,
       0, 0, 1, 0,
       0, 0, 0, 1);
-    // b = Mat4d(
-    //   1, 0, 0, 0,
-    //   0, 1, 0, 1,
-    //   0, 0, 1, 0,
-    //   0, 0, 0, 1);
-    // c = Mat4d(
-    //   1, 0, 0, 0,
-    //   0, 1, 0, 0,
-    //   0, 0, 1, 1,
-    //   0, 0, 0, 1);
+    b = Mat4d(
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      1, 0, 1, 0,
+      0, 0, 0, 1);
+    c = Mat4d(
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      1, 0, 0, 1);
 
-    generators.emplace_back(a, 4, GroupType::EUCLEADIAN);
-    // generators.emplace_back(a, b, c, 4, GroupType::EUCLEADIAN);
+    generators.emplace_back(a, b, c, 4, GroupType::EUCLEADIAN);
   }
 };
 
