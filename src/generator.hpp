@@ -98,6 +98,7 @@ struct Generator {
         Transform& old = transforms[i];
         for (int j = 0; j < gen.size(); ++j) {
           newTrans.mat = gen[j] * old.mat;
+          newTrans.mat.print();
           newTrans.depth = old.depth + 1;
 
           bool unique = true;
