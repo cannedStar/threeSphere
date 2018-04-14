@@ -96,9 +96,10 @@ struct Generator {
 
       for (int i = oldIdx; i < idx; ++i) {
         Transform& old = transforms[i];
+        cout << gen.size() << endl;
         for (int j = 0; j < gen.size(); ++j) {
+          old.mat.print();
           newTrans.mat = gen[j] * old.mat;
-          newTrans.mat.print();
           newTrans.depth = old.depth + 1;
 
           bool unique = true;
