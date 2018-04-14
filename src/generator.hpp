@@ -33,9 +33,6 @@ struct Generator {
     Mat4d a_inv = a;
     invert(a_inv);
 
-    a.print();
-    a_inv.print();
-
     gen.resize(2);
     gen[0] = a;
     gen[1] = a_inv;
@@ -95,10 +92,8 @@ struct Generator {
       idx = transforms.size();
 
       for (int i = oldIdx; i < idx; ++i) {
-        cout << gen.size() << endl;
         for (int j = 0; j < gen.size(); ++j) {
           Transform& old = transforms[i];
-          old.mat.print();
           newTrans.mat = gen[j] * old.mat;
           newTrans.depth = old.depth + 1;
 
@@ -112,7 +107,6 @@ struct Generator {
           }
           if (unique) {
             transforms.push_back(newTrans);
-            cout << "added new trans" << endl;
           }
         }
       }
@@ -177,19 +171,18 @@ struct Group {
       1, 1, 0, 0,
       0, 0, 1, 0,
       0, 0, 0, 1);
-    // b = Mat4d(
-    //   1, 0, 0, 0,
-    //   0, 1, 0, 0,
-    //   1, 0, 1, 0,
-    //   0, 0, 0, 1);
-    // c = Mat4d(
-    //   1, 0, 0, 0,
-    //   0, 1, 0, 0,
-    //   0, 0, 1, 0,
-    //   1, 0, 0, 1);
+    b = Mat4d(
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      1, 0, 1, 0,
+      0, 0, 0, 1);
+    c = Mat4d(
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      1, 0, 0, 1);
 
-    generators.emplace_back(a, 4, GroupType::EUCLEADIAN);
-    // generators.emplace_back(a, b, c, 4, GroupType::EUCLEADIAN);
+    generators.emplace_back(a, b, c, 4, GroupType::EUCLEADIAN);
   }
 };
 
