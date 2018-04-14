@@ -110,7 +110,10 @@ struct Generator {
               break;
             }
           }
-          if (unique) transforms.push_back(newTrans);
+          if (unique) {
+            transforms.push_back(newTrans);
+            cout << "added new trans" << endl;
+          }
         }
       }
     }
