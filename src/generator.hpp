@@ -24,9 +24,26 @@ struct Generator {
   std::vector<Mat4d> gen;
   std::vector<Transform> transforms;
   GroupType type;
+  int maxDepth;
 
-  Generator(Mat4d& a, Mat4d& b, int depth = 8, GroupType t=GroupType::EUCLEADIAN) {
+  Generator(Mat4d& a, int depth = 4, GroupType t=GroupType::EUCLEADIAN) {
     type = t;
+    maxDepth = depth;
+
+    Mat4d a_inv = a;
+    invert(a_inv);
+
+    gen.resize(2);
+    gen[0] = a;
+    gen[1] = a_inv;
+
+    genTransforms(depth);
+  }
+
+  Generator(Mat4d& a, Mat4d& b, int depth = 4, GroupType t=GroupType::EUCLEADIAN) {
+    type = t;
+    maxDepth = depth;
+
     Mat4d a_inv = a;
     Mat4d b_inv = b;
     invert(a_inv);
@@ -38,6 +55,32 @@ struct Generator {
     gen[2] = a_inv;
     gen[3] = b_inv;
 
+    genTransforms(depth);
+  }
+
+  Generator(Mat4d& a, Mat4d& b, Mat4d& c, int depth = 4, GroupType t=GroupType::EUCLEADIAN) {
+    type = t;
+    maxDepth = depth;
+
+    Mat4d a_inv = a;
+    Mat4d b_inv = b;
+    Mat4d c_inv = c;
+    invert(a_inv);
+    invert(b_inv);
+    invert(c_inv);
+
+    gen.resize(6);
+    gen[0] = a;
+    gen[1] = b;
+    gen[2] = c;
+    gen[3] = a_inv;
+    gen[4] = b_inv;
+    gen[5] = c_inv;
+
+    genTransforms(depth);
+  }
+
+  void genTransforms(int& depth) {
     Transform newTrans;
     newTrans.mat = Mat4d::identity();
     newTrans.depth = 0;
@@ -80,7 +123,7 @@ struct Group {
   std::vector<Generator> generators;
 
   void init() {
-    Mat4d a, b;
+    Mat4d a, b, c;
 
     // Figure 8 knot complement
     a = Mat4d(
@@ -119,6 +162,26 @@ struct Group {
     //   0, 0, 0, 1);
     // b = Mat4d(
     //   )
+
+    // 3-Torus;
+    a = Mat4d(
+      1, 0, 0, 0,
+      1, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1);
+    // b = Mat4d(
+    //   1, 0, 0, 0,
+    //   0, 1, 0, 1,
+    //   0, 0, 1, 0,
+    //   0, 0, 0, 1);
+    // c = Mat4d(
+    //   1, 0, 0, 0,
+    //   0, 1, 0, 0,
+    //   0, 0, 1, 1,
+    //   0, 0, 0, 1);
+
+    generators.emplace_back(a, 4, GroupType::EUCLEADIAN);
+    // generators.emplace_back(a, b, c, 4, GroupType::EUCLEADIAN);
   }
 };
 

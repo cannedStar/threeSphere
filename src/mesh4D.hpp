@@ -29,17 +29,6 @@ struct Mesh4D {
 
       // if(nNum > 0) normals[i] = m.normals()[i];
     }
-
-    // for (unsigned i = 0; i < Nv; ++i) {
-    //   double v1 = m.vertices()[i][0];
-    //   double v2 = m.vertices()[i][1];
-    //   double v3 = m.vertices()[i][2];
-    //   double v0 = sqrt(1.0 - v1*v1 - v2*v2 - v3*v3);
-    //   vertices[i] = Vec4d(v0, v1, v2, v3);
-
-    //   normals[i] = m.normals()[i];
-    //   texCoords[i] = m.texCoord2s()[i];
-    // }
   }
 
   void update(Mat4d mat, GroupType type, int proj) {
@@ -52,10 +41,13 @@ struct Mesh4D {
       switch(proj) {
         case 0: mesh.vertices()[i] = klein(newVert); break;
         case 1: mesh.vertices()[i] = uhs(klein(newVert)); break;
-        case 2: mesh.vertices()[i] = s3tor3(newVert); break;
+        case 2: mesh.vertices()[i] = s3(newVert); break;
+        case 3: mesh.vertices()[i] = eucl(newVert); break;
       }
     }
   }
+
+  
 
   void setType(GroupType type) {
     if(currentType != type) {
@@ -64,6 +56,7 @@ struct Mesh4D {
         switch(type) {
           case GroupType::SPHERICAL: v[0] = sqrt(1.0 - v[1]*v[1] - v[2]*v[2] - v[3]*v[3]); break;
           case GroupType::HYPERBOLIC: v[0] = sqrt(v[1]*v[1] + v[2]*v[2] + v[3]*v[3] + 1.0); break;
+          case GroupType::EUCLEADIAN: v[0] = 1.0; break;
         }
       }
       currentType = type;

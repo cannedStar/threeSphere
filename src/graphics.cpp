@@ -21,13 +21,6 @@ struct HyperApp : OmniStereoGraphicsRenderer {
   cuttlebone::Taker<State> taker;
   State* state;
 
-  Mat4d camera;
-  double theta, epsilon, phi;
-  int depth;
-
-  int activeGroup = 0;
-  int projType = 0;
-
   std::vector<Mesh4D> meshes4D;
 
   Texture tex;
@@ -39,16 +32,13 @@ struct HyperApp : OmniStereoGraphicsRenderer {
 
   HyperApp() {
     state = new State;
-    nav().pos(0.0, 0.0, 0.0);
+
+    nav().pos(0.0, 0.0, 5.0);
+    pose.set(nav());
 
     initWindow();
 
     lens().eyeSep(0.03).far(200);
-
-    theta = 0;
-    epsilon = 0;
-    phi = 0;
-    camera.setIdentity();
 
     SearchPaths sPath;
 
@@ -103,11 +93,8 @@ struct HyperApp : OmniStereoGraphicsRenderer {
     // pose.set(nav());
 
     int popCount = taker.get(*state);
+    
     pose.set(state->pose);
-    camera = state->camera;
-    depth = state->depth;
-    activeGroup = state->activeGroup;
-    projType = state->projType;
   }
 
   void onDraw(Graphics& g) {
@@ -119,59 +106,21 @@ struct HyperApp : OmniStereoGraphicsRenderer {
       shader().uniform("texture", 1.0);
       tex.bind(1);
       
-      // for (int i = 0; i < group.size(); ++i)
-        // Generator& gen = group[i];
-      Generator& gen = group.generators[activeGroup];
+      Generator& gen = group.generators[state->activeGroup];
       for (int j = 0; j < gen.size(); ++j) {
-        if (gen.getDepth(j) > depth) break;
+        if (gen.getDepth(j) > state->depth) break;
         for (int k = 0; k < meshes4D.size(); ++k) {
           Mesh4D& mesh4D = meshes4D[k];
-          mesh4D.update(camera * gen.get(j), gen.type, projType);
+          mesh4D.update(state->camera * gen.get(j), gen.type, state->projType);
           g.draw(mesh4D.mesh);
         }
       }
-      // }
 
       tex.unbind(1);
       shader().uniform("texture", 0.0);
     g.popMatrix();
 
   }
-
-  // KEYBOARD commands local
-  virtual bool onKeyDown(const Keyboard& k){
-    switch (k.key()) {
-      case 'r': theta = 0.0; epsilon = 0.0; phi = 0.0; break;
-      case 'g': theta -= 0.1; break;
-      case 't': theta += 0.1; break;
-      case 'h': epsilon -= 0.1; break;
-      case 'y': epsilon += 0.1; break;
-      case 'j': phi -= 0.1; break;
-      case 'u': phi += 0.1; break;
-      case 'i': ++depth; break;
-      case 'k': --depth; break;
-      case '1': activeGroup = 0; projType = 0; break;
-      case '2': activeGroup = 0; projType = 1; break;
-      case '3': activeGroup = 1; projType = 2; break;
-
-      // case '1': omni().mode(OmniStereo::DUAL).stereo(true); break;
-      // case '2': omni().mode(OmniStereo::ANAGLYPH).stereo(true); break;
-      default: break;
-    }
-
-    camera.setIdentity();
-    GroupType type = group.generators[activeGroup].type;
-    if (type == GroupType::HYPERBOLIC) {
-      camera = rotateTheta(camera, theta);
-      camera = rotateEpsilon(camera, epsilon);
-      camera = rotatePhi(camera, phi);
-      // camera = para(camera, epsilon, phi);
-    } else if (type == GroupType::SPHERICAL) {
-      camera = rotate3s(camera, theta, phi);
-    }
-
-    return true;
-  } // onKeyDown
 
   std::string fragmentCode() {
     return AL_STRINGIFY(
@@ -207,7 +156,7 @@ struct HyperApp : OmniStereoGraphicsRenderer {
   }
 };
 
-int main(int argc, char* argv[]) {
+int main() {
   HyperApp().start();
   return 0;
 }

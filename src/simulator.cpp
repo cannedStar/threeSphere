@@ -1,4 +1,6 @@
-#include "alloutil/al_OmniStereoGraphicsRenderer.hpp"
+#include "alloutil/al_OmniApp.hpp"
+#include "alloGLV/al_ControlGLV.hpp"
+#include "GLV/glv.h"
 #include "Cuttlebone/Cuttlebone.hpp"
 #include "alloutil/al_Simulator.hpp"
 
@@ -13,12 +15,17 @@
 using namespace al;
 using namespace std;
 
-struct HyperApp : OmniStereoGraphicsRenderer {
+struct HyperApp : OmniApp {
   cuttlebone::Maker<State> maker;
   State* state;
 
+  double theta, phi, epsilon;
+
   Group group;
 
+  GLVBinding gui;
+  glv::Slider sTheta, sPhi, sEpsilon;
+  glv::Table layout;
 
   HyperApp() :
     maker(Simulator::defaultBroadcastIP()) 
@@ -26,12 +33,14 @@ struct HyperApp : OmniStereoGraphicsRenderer {
     state = new State;
     memset(state, 0, sizeof(State));
 
-    state->theta = 0;
-    state->epsilon = 0;
-    state->phi = 0;
+    theta = 0;
+    phi = 0;
+    epsilon = 0;
+
     state->camera.setIdentity();
 
     nav().pos(0.0, 0.0, 5.0);
+    pose.set(nav());
 
     initWindow();
 
@@ -39,11 +48,35 @@ struct HyperApp : OmniStereoGraphicsRenderer {
 
     group.init();
 
+    gui.bindTo(InputEventHandler::window());
+    gui.style().color.set(glv::Color(0.7), 0.5);
+
+    layout.arrangement("><");
+
+    sTheta.interval(-M_PI, M_PI);
+    sTheta.attachVariable(theta);
+    layout << sTheta;
+    layout << new glv::Label("theta");
+
+    sPhi.interval(-M_PI, M_PI);
+    sPhi.attachVariable(phi);
+    layout << sPhi;
+    layout << new glv::Label("phi");
+
+    sEpsilon.interval(-M_PI, M_PI);
+    sEpsilon.attachVariable(epsilon);
+    layout << sEpsilon;
+    layout << new glv::Label("epsilon");
+
+    layout.arrange();
+
+    gui << layout;
   }
 
   ~HyperApp() {}
 
   void onAnimate(double dt) {
+    updateCamera();
     state->pose = nav();
 
     maker.set(*state);
@@ -53,40 +86,50 @@ struct HyperApp : OmniStereoGraphicsRenderer {
 
   }
 
+  void updateCamera() {
+    state->camera.setIdentity();
+    GroupType& type = group.generators[state->activeGroup].type;
+    if (type == GroupType::HYPERBOLIC) {
+      state->camera = rotateTheta(state->camera, theta);
+      state->camera = rotateEpsilon(state->camera, epsilon);
+      state->camera = rotatePhi(state->camera, phi);
+      // state->camera = para(state->camera, epsilon, phi);
+    } else if (type == GroupType::SPHERICAL) {
+      state->camera = rotate3s(state->camera, theta, phi);
+    }
+  }
   // KEYBOARD commands local
   virtual bool onKeyDown(const Keyboard& k){
     switch (k.key()) {
-      case 'r': state->theta = 0.0; state->epsilon = 0.0; state->phi = 0.0; break;
-      case 'g': state->theta -= 0.1; break;
-      case 't': state->theta += 0.1; break;
-      case 'h': state->epsilon -= 0.1; break;
-      case 'y': state->epsilon += 0.1; break;
-      case 'j': state->phi -= 0.1; break;
-      case 'u': state->phi += 0.1; break;
+      case 'r': theta = 0.0; epsilon = 0.0; phi = 0.0; break;
+      case 'g': theta -= 0.1; break;
+      case 't': theta += 0.1; break;
+      case 'h': epsilon -= 0.1; break;
+      case 'y': epsilon += 0.1; break;
+      case 'j': phi -= 0.1; break;
+      case 'u': phi += 0.1; break;
       case 'i': ++state->depth; break;
       case 'k': --state->depth; break;
       case '1': state->activeGroup = 0; state->projType = 0; break;
       case '2': state->activeGroup = 0; state->projType = 1; break;
       case '3': state->activeGroup = 1; state->projType = 2; break;
+      case '4': state->activeGroup = 2; state->projType = 3; break;
 
       // case '1': omni().mode(OmniStereo::DUAL).stereo(true); break;
       // case '2': omni().mode(OmniStereo::ANAGLYPH).stereo(true); break;
       default: break;
     }
 
-    state->camera.setIdentity();
-    GroupType type = group.generators[state->activeGroup].type;
-    if (type == GroupType::HYPERBOLIC) {
-      state->camera = rotateTheta(state->camera, state->theta);
-      state->camera = rotateEpsilon(state->camera, state->epsilon);
-      state->camera = rotatePhi(state->camera, state->phi);
-      // state->camera = para(state->camera, state->epsilon, state->phi);
-    } else if (type == GroupType::SPHERICAL) {
-      state->camera = rotate3s(state->camera, state->theta, state->phi);
-    }
+    updateCamera();
 
     return true;
   } // onKeyDown
+
+  virtual bool onMouseDrag(const Mouse& m) {
+    updateCamera();
+
+    return true;
+  }
 
 };
 

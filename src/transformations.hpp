@@ -8,7 +8,11 @@
 using namespace al;
 using namespace std;
 
-Vec3d s3tor3(const Vec4d& src) {
+Vec3d eucl(const Vec4d& src) {
+  return Vec3d(src[1], src[2], src[3]);
+}
+
+Vec3d s3(const Vec4d& src) {
   return Vec3d(src[1] / (1.f - src[0]),
                src[2] / (1.f - src[0]),
                src[3] / (1.f - src[0]));
