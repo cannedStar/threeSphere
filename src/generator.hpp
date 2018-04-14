@@ -93,6 +93,7 @@ struct Generator {
       int oldIdx = idx;
       idx = transforms.size();
 
+      cout << gen.size() << endl;
       for (int i = oldIdx; i < idx; ++i) {
         Transform& old = transforms[i];
         for (int j = 0; j < gen.size(); ++j) {
@@ -107,7 +108,7 @@ struct Generator {
               break;
             }
           }
-          if (unique) transforms.push_back(newTrans);
+          if (unique) { transforms.push_back(newTrans); newTrans.mat.print(); }
         }
       }
     }
@@ -171,18 +172,19 @@ struct Group {
       1, 1, 0, 0,
       0, 0, 1, 0,
       0, 0, 0, 1);
-    b = Mat4d(
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      1, 0, 1, 0,
-      0, 0, 0, 1);
-    c = Mat4d(
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 1, 0,
-      1, 0, 0, 1);
+    // b = Mat4d(
+    //   1, 0, 0, 0,
+    //   0, 1, 0, 0,
+    //   1, 0, 1, 0,
+    //   0, 0, 0, 1);
+    // c = Mat4d(
+    //   1, 0, 0, 0,
+    //   0, 1, 0, 0,
+    //   0, 0, 1, 0,
+    //   1, 0, 0, 1);
 
-    generators.emplace_back(a, b, c, 4, GroupType::EUCLEADIAN);
+    generators.emplace_back(a, 4, GroupType::EUCLEADIAN);
+    // generators.emplace_back(a, b, c, 4, GroupType::EUCLEADIAN);
   }
 };
 
