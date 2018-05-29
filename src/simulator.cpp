@@ -149,10 +149,10 @@ struct HyperApp : OmniApp {
       nav().moveU(x * mNavSpeed);
     } else if (m.addressPattern() == "/mz") {
       m >> x;
-      nav().moveF(x * mNavSpeed);
+      nav().spinR(x * mNavTurnSpeed);
     } else if (m.addressPattern() == "/tx") {
       m >> x;
-      nav().spinR(x * mNavTurnSpeed);
+      nav().moveF(x * mNavSpeed);
     } else if (m.addressPattern() == "/ty") {
       m >> x;
       nav().spinU(x * mNavTurnSpeed);
