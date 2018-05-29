@@ -105,12 +105,11 @@ struct HyperApp : OmniApp {
     state->camera.setIdentity();
     GroupType& type = group.generators[state->activeGroup].type;
     if (type == GroupType::HYPERBOLIC) {
-      state->camera = rotateTheta(state->camera, theta);
-      state->camera = rotateEpsilon(state->camera, epsilon);
-      state->camera = rotatePhi(state->camera, phi);
-      // state->camera = para(state->camera, epsilon, phi);
+      // state->camera = rotateTheta(state->camera, theta);
+      // state->camera = rotateEpsilon(state->camera, epsilon);
+      // state->camera = rotatePhi(state->camera, phi);
+      state->camera = para(state->camera, theta, phi);
     } else if (type == GroupType::SPHERICAL) {
-      cout << phi << endl;
       state->camera = rotate3s(state->camera, theta, phi);
     }
   }
