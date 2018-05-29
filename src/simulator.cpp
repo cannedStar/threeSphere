@@ -163,24 +163,12 @@ struct HyperApp : OmniApp {
     } else if (m.addressPattern() == "/b1") {
       m >> x;
       if (x == 1) {
-        // animateCam = true;
-        // showDemo = false;
-        // preset_index = 0;
-        // new_state->set(preset_state[preset_index]);
-        // scene_timer = scene_duration;
-        // printf("showing preset %d\n", preset_index);
-        // state->setToggle(new_state);
+        theta += 0.1;
       }
     } else if (m.addressPattern() == "/b2") {
       m >> x;
       if (x == 1) {
-        // animateCam = true;
-        // showDemo = false;
-        // preset_index = 1;
-        // new_state->set(preset_state[preset_index]);
-        // scene_timer = scene_duration;
-        // printf("showing preset %d\n", preset_index);
-        // state->setToggle(new_state);
+        theta -= 0.1;
       }
     } else if (m.addressPattern() == "/b3") {
       m >> x;
@@ -226,7 +214,7 @@ struct HyperApp : OmniApp {
     } else if (m.addressPattern() == "/b10") {
       m >> x;
       if (x == 1) {
-        // state->time_mult = 1.0 - state->time_mult;
+        state->showOrigin = !state->showOrigin;
       }
     } else {
       // m.print();
