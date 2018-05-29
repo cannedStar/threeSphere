@@ -20,6 +20,7 @@ struct HyperApp : OmniApp {
   State* state;
 
   double theta, phi, epsilon;
+  int changeTheta;
 
   Group group;
 
@@ -37,6 +38,8 @@ struct HyperApp : OmniApp {
     theta = 0;
     phi = 0;
     epsilon = 0;
+
+    changeTheta = 0;
 
     state->init();
 
@@ -77,6 +80,9 @@ struct HyperApp : OmniApp {
   ~HyperApp() {}
 
   void onAnimate(double dt) {
+    if(changeTheta > 0) theta += 0.01;
+    else if(changeTheta < 0) theta -= 0.01;
+
     updateCamera();
     state->pose = nav();
 
@@ -104,7 +110,7 @@ struct HyperApp : OmniApp {
     switch (k.key()) {
       case 'r': nav().home(); break;
       case 'f': theta = 0.0; epsilon = 0.0; phi = 0.0; break;
-      case 'g': theta -= 0.1; break;
+      case 'g': theta -= -0.1; break;
       case 't': theta += 0.1; break;
       case 'h': epsilon -= 0.1; break;
       case 'y': epsilon += 0.1; break;
@@ -163,12 +169,16 @@ struct HyperApp : OmniApp {
     } else if (m.addressPattern() == "/b1") {
       m >> x;
       if (x == 1) {
-        theta += 0.1;
+        changeTheta = 1;
+      } else {
+        changeTheta = 0;
       }
     } else if (m.addressPattern() == "/b2") {
       m >> x;
       if (x == 1) {
-        theta -= 0.1;
+        changeTheta = -1;
+      } else {
+        changeTheta = 0;
       }
     } else if (m.addressPattern() == "/b3") {
       m >> x;
