@@ -110,6 +110,7 @@ struct HyperApp : OmniApp {
       state->camera = rotatePhi(state->camera, phi);
       // state->camera = para(state->camera, epsilon, phi);
     } else if (type == GroupType::SPHERICAL) {
+      cout << phi << endl;
       state->camera = rotate3s(state->camera, theta, phi);
     }
   }
@@ -118,7 +119,7 @@ struct HyperApp : OmniApp {
     switch (k.key()) {
       case 'r': nav().home(); break;
       case 'f': theta = 0.0; epsilon = 0.0; phi = 0.0; break;
-      case 'g': theta -= -0.1; break;
+      case 'g': theta -= 0.1; break;
       case 't': theta += 0.1; break;
       case 'h': epsilon -= 0.1; break;
       case 'y': epsilon += 0.1; break;
