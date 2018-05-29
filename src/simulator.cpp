@@ -143,7 +143,7 @@ struct HyperApp : OmniApp {
     m.print();
     if (m.addressPattern() == "/mx") {
       m >> x;
-      nav().moveR(x * mNavSpeed);
+      nav().moveR(-x * mNavSpeed);
     } else if (m.addressPattern() == "/my") {
       m >> x;
       nav().moveU(x * mNavSpeed);
