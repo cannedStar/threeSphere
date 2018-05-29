@@ -138,6 +138,110 @@ struct HyperApp : OmniApp {
     return true;
   }
 
+  virtual void onMessage(osc::Message& m) {
+    float x;
+    m.print();
+    if (m.addressPattern() == "/mx") {
+      m >> x;
+      nav().moveR(x * mNavSpeed);
+    } else if (m.addressPattern() == "/my") {
+      m >> x;
+      nav().moveU(x * mNavSpeed);
+    } else if (m.addressPattern() == "/mz") {
+      m >> x;
+      nav().moveF(x * mNavSpeed);
+    } else if (m.addressPattern() == "/tx") {
+      m >> x;
+      nav().spinR(x * mNavTurnSpeed);
+    } else if (m.addressPattern() == "/ty") {
+      m >> x;
+      nav().spinU(x * mNavTurnSpeed);
+    } else if (m.addressPattern() == "/tz") {
+      m >> x;
+      nav().spinF(x * mNavTurnSpeed);
+    }
+    // } else if (m.addressPattern() == "/b1") {
+    //   // m >> x;
+    //   // if (x == 1) {
+    //   //   animateCam = true;
+    //   //   showDemo = false;
+    //   //   preset_index = 0;
+    //   //   new_state->set(preset_state[preset_index]);
+    //   //   scene_timer = scene_duration;
+    //   //   printf("showing preset %d\n", preset_index);
+    //   //   state->setToggle(new_state);
+    //   // }
+    // } else if (m.addressPattern() == "/b2") {
+    //   // m >> x;
+    //   // if (x == 1) {
+    //   //   animateCam = true;
+    //   //   showDemo = false;
+    //   //   preset_index = 1;
+    //   //   new_state->set(preset_state[preset_index]);
+    //   //   scene_timer = scene_duration;
+    //   //   printf("showing preset %d\n", preset_index);
+    //   //   state->setToggle(new_state);
+    //   // }
+    // } else if (m.addressPattern() == "/b3") {
+    //   // m >> x;
+    //   // if (x == 1) {
+    //   //   animateCam = true;
+    //   //   showDemo = false;
+    //   //   preset_index = 2;
+    //   //   new_state->set(preset_state[preset_index]);
+    //   //   scene_timer = scene_duration;
+    //   //   printf("showing preset %d\n", preset_index);
+    //   //   state->setToggle(new_state);
+    //   // }
+    // } else if (m.addressPattern() == "/b4") {
+    //   m >> x;
+    //   if (x == 1) {
+    //     animateCam = true;
+    //     showDemo = false;
+    //     preset_index = 3;
+    //     new_state->set(preset_state[preset_index]);
+    //     scene_timer = scene_duration;
+    //     printf("showing preset %d\n", preset_index);
+    //     state->setToggle(new_state);
+    //   }
+    // } else if (m.addressPattern() == "/b5") {
+    //   m >> x;
+    //   if (x == 1) {
+    //     animateCam = true;
+    //     showDemo = false;
+    //     preset_index = (preset_index - 1) % preset_size;
+    //     new_state->set(preset_state[preset_index]);
+    //     scene_timer = scene_duration;
+    //     printf("showing preset %d\n", preset_index);
+    //     state->setToggle(new_state);
+    //   }
+    // } else if (m.addressPattern() == "/b6") {
+    //   m >> x;
+    //   if (x == 1) {
+    //     animateCam = true;
+    //     showDemo = false;
+    //     preset_index = (preset_index + 1) % preset_size;
+    //     new_state->set(preset_state[preset_index]);
+    //     scene_timer = scene_duration;
+    //     printf("showing preset %d\n", preset_index);
+    //     state->setToggle(new_state);
+    //   }
+    // } else if (m.addressPattern() == "/b9") {
+    //   m >> x;
+    //   if (x == 1) {
+    //     nav().pos().set(0,0.1,6.0);
+    //     nav().quat().setIdentity();
+    //   }
+    // } else if (m.addressPattern() == "/b10") {
+    //   m >> x;
+    //   if (x == 1) {
+    //     state->time_mult = 1.0 - state->time_mult;
+    //   }
+    // } else {
+    //   m.print();
+    // }
+  }
+
 };
 
 int main(int argc, char* argv[]) {
