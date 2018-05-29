@@ -205,7 +205,7 @@ struct HyperApp : OmniApp {
       if (x == 1) {
         joystickModifier |= 1;
       } else {
-        joystickModifier ^= 0;
+        joystickModifier ^= 1;
       }
     } else if (m.addressPattern() == "/b6") {
       m >> x;
@@ -223,9 +223,7 @@ struct HyperApp : OmniApp {
       if (x == 1) {
         joystickModifier |= 2;
       } else {
-        cout << "before xor" << joystickModifier << endl;
         joystickModifier ^= 2;
-        cout << "after xor" << joystickModifier << endl;
       }
     } else if (m.addressPattern() == "/b8") {
       m >> x;
