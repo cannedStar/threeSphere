@@ -160,7 +160,6 @@ struct HyperApp : OmniApp {
     } else if (m.addressPattern() == "/tz") {
       m >> x;
       nav().spinF(x * mNavTurnSpeed);
-    }
     } else if (m.addressPattern() == "/b1") {
       m >> x;
       if (x == 1) {
