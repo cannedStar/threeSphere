@@ -20,7 +20,7 @@ struct HyperApp : OmniApp {
   State* state;
 
   double theta, phi, epsilon;
-  int changeTheta;
+  int changeTheta, changePhi;
 
   int joystickModifier;
 
@@ -42,6 +42,7 @@ struct HyperApp : OmniApp {
     epsilon = 0;
 
     changeTheta = 0;
+    changePhi = 0;
 
     joystickModifier = 0;
 
@@ -86,6 +87,9 @@ struct HyperApp : OmniApp {
   void onAnimate(double dt) {
     if(changeTheta > 0) theta += 0.01;
     else if(changeTheta < 0) theta -= 0.01;
+
+    if(changePhi > 0) phi += 0.01;
+    else if(changePhi < 0) phi -= 0.01;
 
     updateCamera();
     state->pose = nav();
@@ -187,18 +191,16 @@ struct HyperApp : OmniApp {
     } else if (m.addressPattern() == "/b3") {
       m >> x;
       if (x == 1) {
-        // animateCam = true;
-        // showDemo = false;
-        // preset_index = 2;
-        // new_state->set(preset_state[preset_index]);
-        // scene_timer = scene_duration;
-        // printf("showing preset %d\n", preset_index);
-        // state->setToggle(new_state);
+        changePhi = -1;
+      } else {
+        changePhi = 0;
       }
     } else if (m.addressPattern() == "/b4") {
       m >> x;
       if (x == 1) {
-
+        changePhi = 1;
+      } else {
+        changePhi = 0;
       }
     } else if (m.addressPattern() == "/b5") {
       m >> x;
