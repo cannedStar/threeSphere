@@ -22,6 +22,8 @@ struct HyperApp : OmniApp {
   double theta, phi, epsilon;
   int changeTheta;
 
+  int joystickModifier;
+
   Group group;
 
   GLVBinding gui;
@@ -40,6 +42,8 @@ struct HyperApp : OmniApp {
     epsilon = 0;
 
     changeTheta = 0;
+
+    joystickModifier = 0;
 
     state->init();
 
@@ -199,27 +203,44 @@ struct HyperApp : OmniApp {
     } else if (m.addressPattern() == "/b5") {
       m >> x;
       if (x == 1) {
-        --state->depth;
+        joystickModifier |= 1;
+      } else {
+        joystickModifier ^= 0;
       }
     } else if (m.addressPattern() == "/b6") {
       m >> x;
       if (x == 1) {
-        ++state->depth;
+        if (joystickModifier == 0) {
+          ++state->depth;
+        } else if (joystickModifier == 1) {
+          state->activeGroup += 1; if (state->activeGroup >= group.size()) state->activeGroup = 0;
+        } else if (joystickModifier == 2) {
+          state->meshSize += 0.1;
+        }
       }
     } else if (m.addressPattern() == "/b7") {
       m >> x;
       if (x == 1) {
-        state->meshSize -= 0.1;
+        joystickModifier |= 2;
+      } else {
+        joystickModifier ^= 2;
       }
     } else if (m.addressPattern() == "/b8") {
       m >> x;
       if (x == 1) {
-        state->meshSize += 0.1;
+        if (joystickModifier == 0) {
+          --state->depth;
+        } else if (joystickModifier == 1) {
+          state->activeGroup -= 1; if (state->activeGroup < 0) state->activeGroup = group.size() - 1;
+        } else if (joystickModifier == 2) {
+          state->meshSize -= 0.1;
+        }
       }
     } else if (m.addressPattern() == "/b9") {
       m >> x;
       if (x == 1) {
         nav().home();
+        theta = 0;
       }
     } else if (m.addressPattern() == "/b10") {
       m >> x;
