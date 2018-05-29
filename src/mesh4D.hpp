@@ -1,9 +1,6 @@
 #ifndef INCLUDE_MESH4D_HPP
 #define INCLUDE_MESH4D_HPP
 
-#include <thread>
-#include <atomic>
-
 #include "generator.hpp"
 
 struct Mesh4D {
@@ -12,10 +9,7 @@ struct Mesh4D {
   Mesh mesh;
   unsigned vNum, nNum;
   GroupType currentType;
-
-  // std::thread polyThread;
-
-  // atomic<bool> busy { false };
+  double currentScale;
 
   Mesh4D(Mesh& m) {
     mesh.reset();
@@ -36,38 +30,41 @@ struct Mesh4D {
 
       // if(nNum > 0) normals[i] = m.normals()[i];
     }
+
+    currentScale = 1.0;
   }
 
-  void update(Mat4d mat, GroupType type, int proj) {
-    setType(type);
+  void update(Mat4d mat, GroupType type, double scale=1.0, bool uhsProj=false) {
+    setType(type, scale);
 
     Vec4d newVert;
 
     for (unsigned i = 0; i < vNum; ++i) {
       Mat4d::multiply(newVert, mat, vertices[i]);
-      switch(proj) {
-        case 0: mesh.vertices()[i] = klein(newVert); break;
-        case 1: mesh.vertices()[i] = uhs(klein(newVert)); break;
-        case 2: mesh.vertices()[i] = s3(newVert); break;
-        case 3: mesh.vertices()[i] = eucl(newVert); break;
+      switch(type) {
+        case GroupType::HYPERBOLIC: if(uhsProj) mesh.vertices()[i] = uhs(klein(newVert));
+                         else mesh.vertices()[i] = klein(newVert); break;
+        case GroupType::SPHERICAL: mesh.vertices()[i] = s3(newVert); break;
+        case GroupType::EUCLEADIAN: mesh.vertices()[i] = eucl(newVert); break;
       }
     }
 
     // busy = false;
   }
 
-  // void updateT(Mat4d mat, GroupType type, int proj) {
+  // void updateT(Mat4d mat, GroupType type, bool uhsProj) {
   //   busy = true;
-  //   polyThread = std::thread([this, mat, type, proj] {
-  //     this->update(mat, type, proj);
+  //   polyThread = std::thread([this, mat, type, uhsProj] {
+  //     this->update(mat, type, uhsProj);
   //   });
   //   polyThread.detach();
   // }
 
-  void setType(GroupType type) {
-    if(currentType != type) {
+  void setType(GroupType type, double scale) {
+    if(currentType != type || currentScale != scale) {
       for (unsigned i = 0; i < vNum; ++i) {
         Vec4d& v = vertices[i];
+        v *= scale / currentScale;
         switch(type) {
           case GroupType::SPHERICAL: v[0] = sqrt(1.0 - v[1]*v[1] - v[2]*v[2] - v[3]*v[3]); break;
           case GroupType::HYPERBOLIC: v[0] = sqrt(v[1]*v[1] + v[2]*v[2] + v[3]*v[3] + 1.0); break;
@@ -75,6 +72,7 @@ struct Mesh4D {
         }
       }
       currentType = type;
+      currentScale = scale;
     }
   }
 };

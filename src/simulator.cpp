@@ -37,7 +37,7 @@ struct HyperApp : OmniApp {
     phi = 0;
     epsilon = 0;
 
-    state->camera.setIdentity();
+    state->init();
 
     nav().pos(0.0, 0.0, 5.0);
     pose.set(nav());
@@ -101,7 +101,8 @@ struct HyperApp : OmniApp {
   // KEYBOARD commands local
   virtual bool onKeyDown(const Keyboard& k){
     switch (k.key()) {
-      case 'r': theta = 0.0; epsilon = 0.0; phi = 0.0; break;
+      case 'r': nav().pos(0.0, 0.0, 0.0); break;
+      case 'f': theta = 0.0; epsilon = 0.0; phi = 0.0; break;
       case 'g': theta -= 0.1; break;
       case 't': theta += 0.1; break;
       case 'h': epsilon -= 0.1; break;
@@ -110,10 +111,16 @@ struct HyperApp : OmniApp {
       case 'u': phi += 0.1; break;
       case 'i': ++state->depth; break;
       case 'k': --state->depth; break;
-      case '1': state->activeGroup = 0; state->projType = 0; break;
-      case '2': state->activeGroup = 0; state->projType = 1; break;
-      case '3': state->activeGroup = 1; state->projType = 2; break;
-      case '4': state->activeGroup = 2; state->projType = 3; break;
+      case 'p': state->uhsProj = !state->uhsProj; break;
+      case '[': state->activeGroup -= 1; if (state->activeGroup < 0) state->activeGroup = group.size() - 1; cout << state->activeGroup << endl; break;
+      case ']': state->activeGroup += 1; if (state->activeGroup >= group.size()) state->activeGroup = 0; cout << state->activeGroup << endl; break;
+      case '1': state->activeGroup = 0; break;
+      case '2': state->activeGroup = 1; break;
+      case '3': state->activeGroup = 2; break;
+      case '4': state->activeGroup = 3; break;
+      case ',': state->meshSize -= 0.1; break;
+      case '.': state->meshSize += 0.1; break;
+      case 'o': state->showOrigin = !state->showOrigin; break;
 
       // case '1': omni().mode(OmniStereo::DUAL).stereo(true); break;
       // case '2': omni().mode(OmniStereo::ANAGLYPH).stereo(true); break;

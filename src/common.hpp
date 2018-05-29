@@ -11,14 +11,20 @@ struct State {
   Mat4d camera;
   int depth;
   int activeGroup;
-  int projType;
+  bool uhsProj;
+  bool showOrigin;
+  double meshSize = 1.0;
 
-  State() {
+  State() {}
+
+  void init() {
     pose.pos(0.0, 0.0, 5.0);
     camera.setIdentity();
     depth = 0;
     activeGroup = 0;
-    projType = 0;
+    uhsProj = false;
+    showOrigin = true;
+    meshSize = 1.0;
   }
 };
 

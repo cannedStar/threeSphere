@@ -7,6 +7,7 @@
 #include "common.hpp"
 #include "transformations.hpp"
 #include "particles.hpp"
+#include "obj4D.hpp"
 #include "mesh4D.hpp"
 #include "generator.hpp"
 
@@ -21,17 +22,19 @@ struct HyperApp : OmniStereoGraphicsRenderer {
   cuttlebone::Taker<State> taker;
   State* state;
 
-  std::vector<Mesh4D> meshes4D;
-
-  Texture tex;
   Scene* ascene = 0;
   Vec3f scene_center;
   float scene_scaleInv;
+
+  Obj4D obj4D;
+
+  Texture tex;
 
   Group group;
 
   HyperApp() {
     state = new State;
+    state->init();
 
     nav().pos(0.0, 0.0, 5.0);
     pose.set(nav());
@@ -41,8 +44,14 @@ struct HyperApp : OmniStereoGraphicsRenderer {
     lens().eyeSep(0.03).far(200);
 
     SearchPaths sPath;
-
     sPath.addAppPaths();
+
+    // Image img(sPath.find("hubble.jpg").filepath());
+    Image img(sPath.find("hue.png").filepath());
+    tex.allocate(img.array());
+
+    group.init();
+
     FilePath path = sPath.find("ducky.obj");
     printf("reading %s\n", path.filepath().c_str());
 
@@ -62,26 +71,8 @@ struct HyperApp : OmniStereoGraphicsRenderer {
     scene_scaleInv = al::max(scene_max[2] - scene_min[2],scene_scaleInv);
     scene_scaleInv = 2.f / scene_scaleInv;
 
-    for(unsigned i = 0; i < ascene->meshes(); ++i) {
-      Mesh mesh;
-      ascene->mesh(i, mesh);
-
-      for(unsigned j = 0; j < mesh.vertices().size(); ++j) {
-        Vec3f& v = mesh.vertices()[j];
-
-        v -= scene_center;
-        v *= scene_scaleInv;
-        v *= 0.5;
-      }
-
-      meshes4D.emplace_back(mesh);
-    }
-
-    // Image img(sPath.find("hubble.jpg").filepath());
-    Image img(sPath.find("hue.png").filepath());
-    tex.allocate(img.array());
-
-    group.init();
+    obj4D.load(ascene, scene_center, scene_scaleInv);
+    
   }
 
   ~HyperApp() {}
@@ -104,15 +95,15 @@ struct HyperApp : OmniStereoGraphicsRenderer {
       tex.bind(1);
       
       Generator& gen = group.generators[state->activeGroup];
-      for (int i = 0; i < meshes4D.size(); ++i) {
-        Mesh4D& mesh4D = meshes4D[i];
-        for (int j = 0; j < gen.size(); ++j) {
-          if (gen.getDepth(j) > state->depth) break;      
+      for (int i = 0; i < obj4D.size(); ++i) {
+        Mesh4D& mesh4D = obj4D.meshes4D[i];
+        for (int j = state->showOrigin? 0 : 1; j < gen.size(); ++j) {
+          if (gen.getDepth(j) > state->depth) break;
 
-          // if(!mesh4D.busy)
-          //   mesh4D.updateT(state->camera * gen.get(j), gen.type, state->projType);
+          // if(!busy)
+          //   mesh4D.updateT(state->camera * gen.get(j), gen.type, state->uhsProj);
 
-          mesh4D.update(state->camera * gen.get(j), gen.type, state->projType);
+          mesh4D.update(state->camera * gen.get(j), gen.type, state->meshSize, state->uhsProj);
 
           g.draw(mesh4D.mesh);
         }

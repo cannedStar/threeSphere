@@ -18,6 +18,7 @@ enum GroupType {
 struct Transform {
   Mat4d mat;
   int depth;
+  Mat4d old;
 };
 
 struct Generator {
@@ -84,6 +85,7 @@ struct Generator {
     Transform newTrans;
     newTrans.mat = Mat4d::identity();
     newTrans.depth = 0;
+    newTrans.old = Mat4d::identity();
     transforms.push_back(newTrans);
 
     int idx = 0;
@@ -93,9 +95,15 @@ struct Generator {
 
       for (int i = oldIdx; i < idx; ++i) {
         for (int j = 0; j < gen.size(); ++j) {
-          Transform& old = transforms[i];
-          newTrans.mat = gen[j] * old.mat;
-          newTrans.depth = old.depth + 1;
+          Transform& oldTrans = transforms[i];
+          newTrans.mat = gen[j] * oldTrans.mat;
+          newTrans.depth = oldTrans.depth + 1;
+          if(i == 0) {
+            newTrans.old = Mat4d::identity();
+          }
+          else {
+            newTrans.old = gen[j] * oldTrans.old;
+          }
 
           bool unique = true;
 
@@ -124,37 +132,10 @@ struct Generator {
 struct Group {
   std::vector<Generator> generators;
 
+  unsigned size() { return generators.size(); }
+
   void init() {
     Mat4d a, b, c;
-
-    // Figure 8 knot complement
-    a = Mat4d(
-      1.5, 1.0, 0.0, -0.5,
-      1.0, 1.0, 0.0, -1.0,
-      0.0, 0.0, 1.0, 0.0,
-      0.5, 1.0, 0.0, 0.5);
-    b = Mat4d(
-      1.5, 0.5, -sqrt(3)/2.0, 0.5,
-      0.5, 1.0, 0.0, 0.5,
-      -sqrt(3)/2.0, 0.0, 1.0, -sqrt(3)/2.0,
-      -0.5, -0.5, sqrt(3)/2.0, 0.5);
-
-    generators.emplace_back(a, b, 8, GroupType::HYPERBOLIC);
-
-
-    // Binary Tetrahedral
-    a = 0.5 * Mat4d(
-      1, -1, -1, -1,
-      1, 1, -1, 1,
-      1, 1, 1, -1,
-      1, -1, 1, 1);
-    b = 0.5 * Mat4d(
-      1, -1, -1, 1,
-      1, 1, 1, 1,
-      1, -1, 1, -1,
-      -1, -1, 1, 1);
-
-    generators.emplace_back(a, b, 4, GroupType::SPHERICAL);
 
     // 3-Torus;
     a = Mat4d(
@@ -172,8 +153,171 @@ struct Group {
       0, 1, 0, 0,
       0, 0, 1, 0,
       1, 0, 0, 1);
-
     generators.emplace_back(a, b, c, 4, GroupType::EUCLEADIAN);
+
+    //k2 * s1
+    a = Mat4d(
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      1, 0, 1, 0,
+      0, 0, 0, -1);
+    b = Mat4d(
+      1, 0, 0, 0,
+      1, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1);
+    c = Mat4d(
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      1, 0, 0, 1);
+    generators.emplace_back(a, b, c, 4, GroupType::EUCLEADIAN);
+
+    // Half-Twist Cube
+    a = Mat4d(
+      1, 0, 0, 0,
+      0, 0, 0, -1,
+      1, 0, 1, 0,
+      0, 1, 0, 0);
+    b = Mat4d(
+      1, 0, 0, 0,
+      1, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1);
+    c = Mat4d(
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      1, 0, 0, 1);
+    generators.emplace_back(a, b, c, 4, GroupType::EUCLEADIAN);
+
+    // s1 * r2
+    a = Mat4d(
+      1, 0, 0, 0,
+      1, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1);
+    generators.emplace_back(a, 4, GroupType::EUCLEADIAN);
+
+    // t2 * r
+    a = Mat4d(
+      1, 0, 0, 0,
+      1, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1);
+    b = Mat4d(
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      1, 0, 1, 0,
+      0, 0, 0, 1);
+    generators.emplace_back(a, b, 4, GroupType::EUCLEADIAN);
+
+    // k2 * r
+    a = Mat4d(
+      1, 0, 0, 0,
+      1, -1, 0, 0,
+      0, 0, 1, 0,
+      1, 0, 0, 1);
+    b = Mat4d(
+      1, 0, 0, 0,
+      1, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1);
+    generators.emplace_back(a, b, 4, GroupType::EUCLEADIAN);
+
+    //Half-Twist Chimney
+    a = Mat4d(
+      1, 0, 0, 0,
+      0, 0, 0, -1,
+      1, 0, 1, 0,
+      0, 1, 0, 0);
+    b = Mat4d(
+      1, 0, 0, 0,
+      1, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1);
+    generators.emplace_back(a, b, 4, GroupType::EUCLEADIAN);
+
+    // Binary Tetrahedral
+    // a = 0.5 * Mat4d(
+    //   1, -1, -1, -1,
+    //   1, 1, -1, 1,
+    //   1, 1, 1, -1,
+    //   1, -1, 1, 1);
+    // b = 0.5 * Mat4d(
+    //   1, -1, -1, 1,
+    //   1, 1, 1, 1,
+    //   1, -1, 1, -1,
+    //   -1, -1, 1, 1);
+    a = 0.5 * Mat4d(
+      1, 1, -1, 1,
+      -1, 1, -1, -1,
+      1, 1, 1, -1,
+      -1, 1, 1, 1);
+    b = 0.5 * Mat4d(
+      1, -1, -1, 1,
+      1, 1, -1, -1,
+      1, 1, 1, 1,
+      -1, 1, -1, 1);
+    generators.emplace_back(a, b, 6, GroupType::SPHERICAL);
+
+    // Binary Octahedral
+    a = 0.5 * Mat4d(
+      1, 1, -1, 1,
+      -1, 1, -1, -1,
+      1, 1, 1, -1,
+      -1, 1, 1, 1);
+    b = (1.0 / sqrt(2.0)) * Mat4d(
+      1, 0, 0, 1,
+      0, 1, -1, 0,
+      0, 1, 1, 0,
+      -1, 0, 0, 1);
+    generators.emplace_back(a, b, 6, GroupType::SPHERICAL);
+
+    // Binary Icosahedral
+    double gold = (1.0 + sqrt(5)) / 2.0;
+    double gold_inv = 1.0 / gold;
+    a = 0.5 * Mat4d(
+      1, 1, -1, 1,
+      -1, 1, -1, -1,
+      1, 1, 1, -1,
+      -1, 1, 1, 1);
+    b = 0.5 * Mat4d(
+      gold, 0, -1, gold_inv,
+      0, gold, -gold_inv, -1,
+      1, gold_inv, gold, 0,
+      -gold_inv, 1, 0, gold);
+    generators.emplace_back(a, b, 6, GroupType::SPHERICAL);
+
+    // Aplonian Gasket
+    a = Mat4f(
+      3.f, 0.f, -2.f, 2.f,
+      0.f, 1.f, 0.f, 0.f,
+      -2.f, 0.f, 1.f, -2.f,
+      -2.f, 0.f, 2.f, -1.f);
+
+    b = Mat4f(
+      3.f, 2.f, -2.f, 0.f,
+      2.f, 1.f, -2.f, 0.f,
+      2.f, 2.f, -1.f, 0.f,
+      0.f, 0.f, 0.f, 1.f);
+    generators.emplace_back(a, b, 8, GroupType::HYPERBOLIC);
+
+    // Figure 8 knot complement
+    a = Mat4d(
+      1.5, 1.0, 0.0, -0.5,
+      1.0, 1.0, 0.0, -1.0,
+      0.0, 0.0, 1.0, 0.0,
+      0.5, 1.0, 0.0, 0.5);
+    b = Mat4d(
+      1.5, 0.5, -sqrt(3)/2.0, 0.5,
+      0.5, 1.0, 0.0, 0.5,
+      -sqrt(3)/2.0, 0.0, 1.0, -sqrt(3)/2.0,
+      -0.5, -0.5, sqrt(3)/2.0, 0.5);
+
+    generators.emplace_back(a, b, 8, GroupType::HYPERBOLIC);
+
+    cout << "** Generated " << generators.size() << " groups." << endl;
   }
 };
 
