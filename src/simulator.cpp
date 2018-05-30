@@ -267,7 +267,13 @@ struct HyperApp : OmniApp {
     } else if (m.addressPattern() == "/b10") {
       m >> x;
       if (x == 1) {
-        state->showOrigin = !state->showOrigin;
+        if (joystickModifier == 0)
+          state->showOrigin = !state->showOrigin;
+        else if (joystickModifier == 1) {
+          state->showGraph += 1;
+          if(state->showGraph > 2)
+            state->showGraph = 0;
+        }
       }
     } else {
       // m.print();
