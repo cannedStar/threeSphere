@@ -27,7 +27,8 @@ struct HyperApp : OmniStereoGraphicsRenderer {
   Vec3f scene_center;
   float scene_scaleInv;
 
-  Obj4D obj4D;
+  std::vector<Obj4D> objects4D;
+  // Obj4D obj4D;
   Graph4D graph4D;
 
   Texture tex;
@@ -73,8 +74,18 @@ struct HyperApp : OmniStereoGraphicsRenderer {
     scene_scaleInv = al::max(scene_max[2] - scene_min[2],scene_scaleInv);
     scene_scaleInv = 2.f / scene_scaleInv;
 
+    Obj4D obj4D;
     obj4D.load(ascene, scene_center, scene_scaleInv);
+
+    Generator& gen = group.generators[state->activeGroup];
     
+    objects4D.reserve(4500);
+    objects4D.assign(4500, obj4D);
+
+    // for (int i = 0; i < gen.size(); ++i) {
+    //   Mat4d trans = state->camera * gen.get(i);
+    //   objects4D[i].update(trans, gen.type, state->meshSize, state->uhsProj);
+    // }
   }
 
   ~HyperApp() {}
@@ -103,10 +114,12 @@ struct HyperApp : OmniStereoGraphicsRenderer {
           if (gen.getDepth(i) > state->depth) break;
 
           Mat4d trans = state->camera * gen.get(i);
-          obj4D.update(trans, gen.type, state->meshSize, state->uhsProj);
+          Obj4D& obj4D = objects4D[i];
+          // obj4D.update(trans, gen.type, state->meshSize, state->uhsProj);
 
-          // if(!busy)
-          //   obj4D.renderT(g, trans, gen.type, state->meshSize, state->uhsProj);
+          if(!busy)
+            obj4D.updateT(trans, gen.type, state->meshSize, state->uhsProj);
+          
           obj4D.draw(g);
         }
 

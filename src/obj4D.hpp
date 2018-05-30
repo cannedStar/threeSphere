@@ -46,13 +46,13 @@ struct Obj4D {
     busy = false;
   }
 
-  // void updateT(Graphics g, Mat4d trans, GroupType type, double scale, bool uhsProj) {
-  //   busy = true;
-  //   polyThread = std::thread([this, g, trans, type, scale, uhsProj] {
-  //     this->update(g, trans, type, scale, uhsProj);
-  //   });
-  //   polyThread.detach();
-  // }
+  void updateT(Mat4d trans, GroupType type, double scale, bool uhsProj) {
+    busy = true;
+    polyThread = std::thread([this, trans, type, scale, uhsProj] {
+      this->update(trans, type, scale, uhsProj);
+    });
+    polyThread.detach();
+  }
 
   void draw(Graphics& g) {
     for (unsigned i = 0; i < meshes4D.size(); ++i)
