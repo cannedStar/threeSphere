@@ -303,7 +303,7 @@ struct Group {
       2.f, 1.f, -2.f, 0.f,
       2.f, 2.f, -1.f, 0.f,
       0.f, 0.f, 0.f, 1.f);
-    generators.emplace_back(a, b, 7, GroupType::HYPERBOLIC);
+    generators.emplace_back(a, b, 8, GroupType::HYPERBOLIC);
 
     // Figure 8 knot complement
     a = Mat4d(
@@ -317,7 +317,7 @@ struct Group {
       -sqrt(3)/2.0, 0.0, 1.0, -sqrt(3)/2.0,
       -0.5, -0.5, sqrt(3)/2.0, 0.5);
 
-    generators.emplace_back(a, b, 7, GroupType::HYPERBOLIC);
+    generators.emplace_back(a, b, 8, GroupType::HYPERBOLIC);
 
     cout << "** Generated " << generators.size() << " groups." << endl;
   }
