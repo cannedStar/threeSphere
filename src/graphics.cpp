@@ -116,11 +116,11 @@ struct HyperApp : OmniStereoGraphicsRenderer {
 
       if(state->showGraph != 0) {
         graph4D.update(state->camera, gen, state->depth, 10, state->uhsProj);
-        // g.lineWidth(2.f);
+        g.lineWidth(2.f);
         for(int i = 0; i < graph4D.size(); ++i) {
           g.draw(graph4D.meshes[i]);
         }
-        // g.lineWidth(1.f);
+        g.lineWidth(1.f);
       }
 
     g.popMatrix();
