@@ -48,17 +48,7 @@ struct Mesh4D {
         case GroupType::EUCLEADIAN: mesh.vertices()[i] = eucl(newVert); break;
       }
     }
-
-    // busy = false;
   }
-
-  // void updateT(Mat4d mat, GroupType type, bool uhsProj) {
-  //   busy = true;
-  //   polyThread = std::thread([this, mat, type, uhsProj] {
-  //     this->update(mat, type, uhsProj);
-  //   });
-  //   polyThread.detach();
-  // }
 
   void setType(GroupType type, double scale) {
     if(currentType != type || currentScale != scale) {

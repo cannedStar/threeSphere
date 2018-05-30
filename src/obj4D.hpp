@@ -36,9 +36,28 @@ struct Obj4D {
     }
   }
 
-  // void update(Mat4d& camera, Generator& gen, int depth=0, bool uhsProj=false) {
-  //   for (int )
+  void update(Mat4d trans, GroupType type, double scale=1.0, bool uhsProj=false) {
+    for (unsigned i = 0; i < meshes4D.size(); ++i) {
+      Mesh4D& mesh4D = meshes4D[i];
+
+      mesh4D.update(trans, type, scale, uhsProj);
+    }
+
+    busy = false;
+  }
+
+  // void updateT(Graphics g, Mat4d trans, GroupType type, double scale, bool uhsProj) {
+  //   busy = true;
+  //   polyThread = std::thread([this, g, trans, type, scale, uhsProj] {
+  //     this->update(g, trans, type, scale, uhsProj);
+  //   });
+  //   polyThread.detach();
   // }
+
+  void draw(Graphics& g) {
+    for (unsigned i = 0; i < meshes4D.size(); ++i)
+      g.draw(meshes4D[i].mesh);
+  }
 
   unsigned int size() { return meshes4D.size(); }
 };

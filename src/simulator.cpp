@@ -63,16 +63,19 @@ struct HyperApp : OmniApp {
     layout.arrangement("><");
 
     sTheta.interval(-M_PI, M_PI);
+    sTheta.useInterval(false);
     sTheta.attachVariable(theta);
     layout << sTheta;
     layout << new glv::Label("theta");
 
     sPhi.interval(-M_PI, M_PI);
+    sPhi.useInterval(false);
     sPhi.attachVariable(phi);
     layout << sPhi;
     layout << new glv::Label("phi");
 
     sEpsilon.interval(-M_PI, M_PI);
+    sEpsilon.useInterval(false);
     sEpsilon.attachVariable(epsilon);
     layout << sEpsilon;
     layout << new glv::Label("epsilon");

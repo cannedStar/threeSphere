@@ -139,6 +139,27 @@ struct Group {
   void init() {
     Mat4d a, b, c;
 
+    // s1 * r2
+    a = Mat4d(
+      1, 0, 0, 0,
+      1, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1);
+    generators.emplace_back(a, 4, GroupType::EUCLEADIAN);
+
+    // t2 * r
+    a = Mat4d(
+      1, 0, 0, 0,
+      1, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1);
+    b = Mat4d(
+      1, 0, 0, 0,
+      0, 1, 0, 0,
+      1, 0, 1, 0,
+      0, 0, 0, 1);
+    generators.emplace_back(a, b, 4, GroupType::EUCLEADIAN);
+
     // 3-Torus;
     a = Mat4d(
       1, 0, 0, 0,
@@ -156,6 +177,19 @@ struct Group {
       0, 0, 1, 0,
       1, 0, 0, 1);
     generators.emplace_back(a, b, c, 4, GroupType::EUCLEADIAN);
+
+    // k2 * r
+    a = Mat4d(
+      1, 0, 0, 0,
+      1, -1, 0, 0,
+      0, 0, 1, 0,
+      1, 0, 0, 1);
+    b = Mat4d(
+      1, 0, 0, 0,
+      1, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1);
+    generators.emplace_back(a, b, 4, GroupType::EUCLEADIAN);
 
     //k2 * s1
     a = Mat4d(
@@ -192,40 +226,6 @@ struct Group {
       0, 0, 1, 0,
       1, 0, 0, 1);
     generators.emplace_back(a, b, c, 4, GroupType::EUCLEADIAN);
-
-    // s1 * r2
-    a = Mat4d(
-      1, 0, 0, 0,
-      1, 1, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1);
-    generators.emplace_back(a, 4, GroupType::EUCLEADIAN);
-
-    // t2 * r
-    a = Mat4d(
-      1, 0, 0, 0,
-      1, 1, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1);
-    b = Mat4d(
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      1, 0, 1, 0,
-      0, 0, 0, 1);
-    generators.emplace_back(a, b, 4, GroupType::EUCLEADIAN);
-
-    // k2 * r
-    a = Mat4d(
-      1, 0, 0, 0,
-      1, -1, 0, 0,
-      0, 0, 1, 0,
-      1, 0, 0, 1);
-    b = Mat4d(
-      1, 0, 0, 0,
-      1, 1, 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1);
-    generators.emplace_back(a, b, 4, GroupType::EUCLEADIAN);
 
     //Half-Twist Chimney
     a = Mat4d(

@@ -99,18 +99,15 @@ struct HyperApp : OmniStereoGraphicsRenderer {
         shader().uniform("texture", 1.0);
         tex.bind(1);
 
-        
-        for (int i = 0; i < obj4D.size(); ++i) {
-          Mesh4D& mesh4D = obj4D.meshes4D[i];
-          for (int j = state->showOrigin? 0 : 1; j < gen.size(); ++j) {
-            if (gen.getDepth(j) > state->depth) break;
+        for (int i = state->showOrigin? 0 : 1; i < gen.size(); ++i) {
+          if (gen.getDepth(i) > state->depth) break;
 
-            // if(!busy)
-            //   mesh4D.updateT(state->camera * gen.get(j), gen.type, state->uhsProj);
+          Mat4d trans = state->camera * gen.get(i);
+          obj4D.update(trans, gen.type, state->meshSize, state->uhsProj);
 
-            mesh4D.update(state->camera * gen.get(j), gen.type, state->meshSize, state->uhsProj);
-            g.draw(mesh4D.mesh);
-          }
+          // if(!busy)
+          //   obj4D.renderT(g, trans, gen.type, state->meshSize, state->uhsProj);
+          obj4D.draw(g);
         }
 
         tex.unbind(1);
