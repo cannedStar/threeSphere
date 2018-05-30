@@ -9,6 +9,7 @@
 #include "particles.hpp"
 #include "obj4D.hpp"
 #include "mesh4D.hpp"
+#include "graph4D.hpp"
 #include "generator.hpp"
 
 using namespace al;
@@ -27,6 +28,7 @@ struct HyperApp : OmniStereoGraphicsRenderer {
   float scene_scaleInv;
 
   Obj4D obj4D;
+  Graph4D graph4D;
 
   Texture tex;
 
@@ -90,27 +92,40 @@ struct HyperApp : OmniStereoGraphicsRenderer {
     light();
 
     g.pushMatrix();
-      shader().uniform("texture0", 1);
-      shader().uniform("texture", 1.0);
-      tex.bind(1);
-      
       Generator& gen = group.generators[state->activeGroup];
-      for (int i = 0; i < obj4D.size(); ++i) {
-        Mesh4D& mesh4D = obj4D.meshes4D[i];
-        for (int j = state->showOrigin? 0 : 1; j < gen.size(); ++j) {
-          if (gen.getDepth(j) > state->depth) break;
 
-          // if(!busy)
-          //   mesh4D.updateT(state->camera * gen.get(j), gen.type, state->uhsProj);
+      if(state->showGraph != 2) {
+        shader().uniform("texture0", 1);
+        shader().uniform("texture", 1.0);
+        tex.bind(1);
 
-          mesh4D.update(state->camera * gen.get(j), gen.type, state->meshSize, state->uhsProj);
+        
+        for (int i = 0; i < obj4D.size(); ++i) {
+          Mesh4D& mesh4D = obj4D.meshes4D[i];
+          for (int j = state->showOrigin? 0 : 1; j < gen.size(); ++j) {
+            if (gen.getDepth(j) > state->depth) break;
 
-          g.draw(mesh4D.mesh);
+            // if(!busy)
+            //   mesh4D.updateT(state->camera * gen.get(j), gen.type, state->uhsProj);
+
+            mesh4D.update(state->camera * gen.get(j), gen.type, state->meshSize, state->uhsProj);
+            g.draw(mesh4D.mesh);
+          }
         }
+
+        tex.unbind(1);
+        shader().uniform("texture", 0.0);
       }
 
-      tex.unbind(1);
-      shader().uniform("texture", 0.0);
+      if(state->showGraph != 0) {
+        graph4D.update(state->camera, gen, state->depth, 10, state->uhsProj);
+        // g.lineWidth(2.f);
+        for(int i = 0; i < graph4D.size(); ++i) {
+          g.draw(graph4D.meshes[i]);
+        }
+        // g.lineWidth(1.f);
+      }
+
     g.popMatrix();
 
   }

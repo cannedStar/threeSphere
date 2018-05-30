@@ -13,6 +13,7 @@ struct State {
   int activeGroup;
   bool uhsProj;
   bool showOrigin;
+  int showGraph;
   double meshSize = 1.0;
 
   State() {}
@@ -24,6 +25,7 @@ struct State {
     activeGroup = 0;
     uhsProj = false;
     showOrigin = true;
+    showGraph = 0;
     meshSize = 1.0;
   }
 };

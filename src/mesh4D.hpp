@@ -67,7 +67,7 @@ struct Mesh4D {
         v *= scale / currentScale;
         switch(type) {
           case GroupType::SPHERICAL: v[0] = sqrt(1.0 - v[1]*v[1] - v[2]*v[2] - v[3]*v[3]); break;
-          case GroupType::HYPERBOLIC: v[0] = sqrt(v[1]*v[1] + v[2]*v[2] + v[3]*v[3] + 1.0); break;
+          case GroupType::HYPERBOLIC: v[0] = sqrt(1.0 + v[1]*v[1] + v[2]*v[2] + v[3]*v[3]); break;
           case GroupType::EUCLEADIAN: v[0] = 1.0; break;
         }
       }

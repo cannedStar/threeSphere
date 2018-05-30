@@ -116,14 +116,14 @@ struct HyperApp : OmniApp {
   // KEYBOARD commands local
   virtual bool onKeyDown(const Keyboard& k){
     switch (k.key()) {
-      case 'r': nav().home(); break;
+      case 'r': nav().home(); theta = 0; epsilon = 0; phi = 0; break;
       case 'f': theta = 0.0; epsilon = 0.0; phi = 0.0; break;
-      case 'g': theta -= 0.1; break;
-      case 't': theta += 0.1; break;
+      case 'g': changeTheta = -1; break;
+      case 't': changeTheta = 1; break;
       case 'h': epsilon -= 0.1; break;
       case 'y': epsilon += 0.1; break;
-      case 'j': phi -= 0.1; break;
-      case 'u': phi += 0.1; break;
+      case 'j': changePhi = -1; break;
+      case 'u': changePhi = 1; break;
       case 'i': ++state->depth; break;
       case 'k': --state->depth; break;
       case 'p': state->uhsProj = !state->uhsProj; break;
@@ -136,6 +136,7 @@ struct HyperApp : OmniApp {
       case ',': state->meshSize -= 0.1; break;
       case '.': state->meshSize += 0.1; break;
       case 'o': state->showOrigin = !state->showOrigin; break;
+      case '\\': state->showGraph += 1; if (state->showGraph > 2) state->showGraph = 0; break; 
 
       // case '1': omni().mode(OmniStereo::DUAL).stereo(true); break;
       // case '2': omni().mode(OmniStereo::ANAGLYPH).stereo(true); break;
@@ -146,6 +147,20 @@ struct HyperApp : OmniApp {
 
     return true;
   } // onKeyDown
+
+  virtual bool onKeyUp(const Keyboard& k){
+    switch (k.key()) {
+      case 'g': changeTheta = 0; break;
+      case 't': changeTheta = 0; break;
+      case 'j': changePhi = 0; break;
+      case 'u': changePhi = 0; break;
+      default: break;
+    }
+
+    updateCamera();
+
+    return true;
+  } // onKeyUp
 
   virtual bool onMouseDrag(const Mouse& m) {
     updateCamera();
@@ -243,6 +258,8 @@ struct HyperApp : OmniApp {
       if (x == 1) {
         nav().home();
         theta = 0;
+        epsilon = 0;
+        phi = 0;
       }
     } else if (m.addressPattern() == "/b10") {
       m >> x;

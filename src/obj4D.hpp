@@ -36,6 +36,10 @@ struct Obj4D {
     }
   }
 
+  // void update(Mat4d& camera, Generator& gen, int depth=0, bool uhsProj=false) {
+  //   for (int )
+  // }
+
   unsigned int size() { return meshes4D.size(); }
 };
 

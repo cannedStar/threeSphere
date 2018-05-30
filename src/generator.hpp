@@ -126,6 +126,8 @@ struct Generator {
 
   Mat4d& get(int n) { return transforms[n].mat; }
 
+  Mat4d& getOld(int n) { return transforms[n].old; }
+
   int getDepth(int n) { return transforms[n].depth; }
 };
 
