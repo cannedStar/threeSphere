@@ -173,7 +173,7 @@ struct HyperApp : OmniApp {
 
   virtual void onMessage(osc::Message& m) {
     float x;
-    m.print();
+    // m.print();
     if (m.addressPattern() == "/mx") {
       m >> x;
       nav().moveR(-x * mNavSpeed);
@@ -276,7 +276,7 @@ struct HyperApp : OmniApp {
         }
       }
     } else {
-      // m.print();
+      m.print();
     }
   }
 
