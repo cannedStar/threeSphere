@@ -44,7 +44,7 @@ struct HyperApp : OmniStereoGraphicsRenderer {
 
     initWindow();
 
-    lens().eyeSep(0.015).far(200);
+    lens().eyeSep(0.015).near(0.1).far(200);
 
     SearchPaths sPath;
     sPath.addAppPaths();
