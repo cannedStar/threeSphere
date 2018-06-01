@@ -21,6 +21,7 @@ struct Obj4D {
   bool currentProj;
 
   bool busy { false };
+  bool dirty { false };
 
   Obj4D() {}
 
@@ -55,11 +56,13 @@ struct Obj4D {
     currentScale = scale;
     currentProj = uhsProj;
     busy = false;
+    dirty = false;
   }
 
   void updateT(Mat4d trans, GroupType type, double scale, bool uhsProj) {
-    if(!compare(currentTrans, trans) || currentType != type || currentScale != scale || currentProj != uhsProj) {
+    if(!compare(currentTrans, trans) || currentScale != scale) {
       busy = true;
+      if(currentType != type || currentProj != uhsProj) dirty = true;
       polyThread = std::thread([this, trans, type, scale, uhsProj] {
         this->update(trans, type, scale, uhsProj);
       });

@@ -120,7 +120,7 @@ struct HyperApp : OmniStereoGraphicsRenderer {
           if(!obj4D.busy)
             obj4D.updateT(trans, gen.type, state->meshSize, state->uhsProj);
           
-          if(!obj4D.busy)
+          if(!obj4D.dirty)
             obj4D.draw(g);
         }
 
