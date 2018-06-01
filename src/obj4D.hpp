@@ -7,15 +7,20 @@
 #include "allocore/graphics/al_Asset.hpp"
 
 #include "generator.hpp"
+#include "transformations.hpp"
 #include "mesh4D.hpp"
 
 std::thread polyThread;
-atomic<bool> busy { false };
 
 struct Obj4D {
   std::vector<Mesh4D> meshes4D;
-
+  
+  Mat4d currentTrans;
   GroupType currentType;
+  double currentScale;
+  bool currentProj;
+
+  bool busy { false };
 
   Obj4D() {}
 
@@ -34,6 +39,8 @@ struct Obj4D {
 
       meshes4D.emplace_back(mesh);
     }
+
+    currentTrans.setIdentity();
   }
 
   void update(Mat4d trans, GroupType type, double scale=1.0, bool uhsProj=false) {
@@ -43,15 +50,21 @@ struct Obj4D {
       mesh4D.update(trans, type, scale, uhsProj);
     }
 
+    currentTrans = trans;
+    currentType = type;
+    currentScale = scale;
+    currentProj = uhsProj;
     busy = false;
   }
 
   void updateT(Mat4d trans, GroupType type, double scale, bool uhsProj) {
-    busy = true;
-    polyThread = std::thread([this, trans, type, scale, uhsProj] {
-      this->update(trans, type, scale, uhsProj);
-    });
-    polyThread.detach();
+    if(!compare(currentTrans, trans) || currentType != type || currentScale != scale || currentProj != uhsProj) {
+      busy = true;
+      polyThread = std::thread([this, trans, type, scale, uhsProj] {
+        this->update(trans, type, scale, uhsProj);
+      });
+      polyThread.detach();
+    }
   }
 
   void draw(Graphics& g) {

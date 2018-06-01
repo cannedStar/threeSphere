@@ -117,10 +117,11 @@ struct HyperApp : OmniStereoGraphicsRenderer {
           Obj4D& obj4D = objects4D[i];
           // obj4D.update(trans, gen.type, state->meshSize, state->uhsProj);
 
-          if(!busy)
+          if(!obj4D.busy)
             obj4D.updateT(trans, gen.type, state->meshSize, state->uhsProj);
           
-          obj4D.draw(g);
+          if(!obj4D.busy)
+            obj4D.draw(g);
         }
 
         tex.unbind(1);
