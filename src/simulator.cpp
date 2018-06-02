@@ -33,7 +33,8 @@ struct HyperApp : OmniApp {
   HyperApp() :
     maker(Simulator::defaultBroadcastIP()) 
   {
-    mNavSpeed = 0.2;
+    mNavSpeed = 0.1;
+    mNavTurnSpeed = 0.015;
     state = new State;
     memset(state, 0, sizeof(State));
 
